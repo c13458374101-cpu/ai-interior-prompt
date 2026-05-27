@@ -232,6 +232,8 @@ h2 {
   display: flex;
   gap: 8px;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .iconButton,
@@ -246,14 +248,19 @@ h2 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  line-height: 1;
 }
 
 .iconButton {
   width: 40px;
+  min-width: 40px;
 }
 
 .copyButton {
   gap: 8px;
+  min-width: 104px;
   padding: 0 14px;
   background: var(--clay);
   border-color: var(--clay);
@@ -263,6 +270,7 @@ h2 {
 
 .shareButton {
   gap: 8px;
+  min-width: 104px;
   padding: 0 14px;
   border-color: var(--gold);
   background: #fff7e8;
@@ -272,6 +280,7 @@ h2 {
 
 .aiButton {
   gap: 8px;
+  min-width: 116px;
   padding: 0 14px;
   border-color: var(--sage);
   background: var(--sage);
@@ -376,6 +385,7 @@ pre {
   .actions {
     width: 100%;
     flex-wrap: wrap;
+    justify-content: stretch;
   }
 
   .copyButton {
