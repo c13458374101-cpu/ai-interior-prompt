@@ -103,6 +103,8 @@ const translations: Record<string, string> = {
   "\u5927\u9762\u79ef\u81ea\u7136\u91c7\u5149": "abundant natural light",
   "\u7eff\u690d": "green plants",
   "\u624b\u5de5\u8d28\u611f\u88c5\u9970": "handcrafted textured decor",
+  "\u5e26\u6709\u5f27\u5f62\u6c99\u53d1\u3001\u843d\u5730\u7a97\u3001\u9690\u85cf\u5f0f\u706f\u5e26\u548c\u4f4e\u77ee\u8336\u51e0":
+    "featuring a curved sofa, floor-to-ceiling windows, concealed linear lighting, and a low coffee table",
 };
 
 type PromptState = {
@@ -144,8 +146,10 @@ function translate(value: string) {
     .sort((a, b) => b[0].length - a[0].length)
     .reduce((text, [source, target]) => text.replaceAll(source, target), value)
     .replace(/[，、]/g, ", ")
+    .replace(/和/g, " and ")
     .replace(/。/g, ".")
     .replace(/\s+/g, " ")
+    .replace(/featuring\s*,?\s*/g, "featuring ")
     .trim();
 }
 
