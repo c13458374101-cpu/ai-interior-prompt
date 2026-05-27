@@ -84,6 +84,25 @@ const translations: Record<string, string> = {
   "\u5f27\u5f62\u95e8\u6d1e": "arched doorway",
   "\u80e1\u6843\u6728": "walnut wood",
   "\u9002\u5408\u5c0f\u6237\u578b": "suitable for a compact apartment",
+  "\u5e26\u6709": "featuring",
+  "\u5f27\u5f62\u6c99\u53d1": "a curved sofa",
+  "\u843d\u5730\u7a97": "floor-to-ceiling windows",
+  "\u9690\u85cf\u5f0f\u706f\u5e26": "concealed linear lighting",
+  "\u4f4e\u77ee\u8336\u51e0": "a low coffee table",
+  "\u6a21\u5757\u5316\u6c99\u53d1": "a modular sofa",
+  "\u827a\u672f\u6302\u753b": "art wall pieces",
+  "\u67d4\u548c\u7a97\u5e18": "soft curtains",
+  "\u6536\u7eb3\u6574\u5408": "integrated storage",
+  "\u5e72\u51c0\u7ebf\u6761": "clean lines",
+  "\u5f00\u653e\u5f0f\u5e03\u5c40": "an open-plan layout",
+  "\u5c9b\u53f0": "a kitchen island",
+  "\u9690\u85cf\u5f0f\u706f\u5149": "concealed lighting",
+  "\u4f4e\u9971\u548c\u8f6f\u88c5": "low-saturation soft furnishings",
+  "\u77f3\u6750\u53f0\u9762": "stone countertops",
+  "\u5c40\u90e8\u91d1\u5c5e\u70b9\u7f00": "subtle metal accents",
+  "\u5927\u9762\u79ef\u81ea\u7136\u91c7\u5149": "abundant natural light",
+  "\u7eff\u690d": "green plants",
+  "\u624b\u5de5\u8d28\u611f\u88c5\u9970": "handcrafted textured decor",
 };
 
 type PromptState = {
@@ -119,7 +138,15 @@ function optionButton(active: boolean) {
 }
 
 function translate(value: string) {
-  return translations[value] || value;
+  if (translations[value]) return translations[value];
+
+  return Object.entries(translations)
+    .sort((a, b) => b[0].length - a[0].length)
+    .reduce((text, [source, target]) => text.replaceAll(source, target), value)
+    .replace(/[，、]/g, ", ")
+    .replace(/。/g, ".")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function translateList(value: string) {
@@ -127,7 +154,7 @@ function translateList(value: string) {
     .split(/[,，、\n]/)
     .map((item) => item.trim())
     .filter(Boolean)
-    .map((item) => translations[item] || item)
+    .map((item) => translate(item))
     .join(", ");
 }
 
