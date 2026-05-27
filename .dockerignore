@@ -1,0 +1,11 @@
+.git
+.next
+node_modules
+.env*
+!.env.example
+*.log
+README.md
+DEPLOYMENT.md
+push-to-github.*
+set-openai-key.*
+start-site.cmd
