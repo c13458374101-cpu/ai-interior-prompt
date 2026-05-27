@@ -14,6 +14,10 @@ type PromptRequest = {
   keywords: string;
 };
 
+function containsChinese(value: string) {
+  return /[\u3400-\u9fff]/.test(value);
+}
+
 export async function POST(request: Request) {
   const config = await getOpenAiConfig();
 
@@ -54,7 +58,7 @@ export async function POST(request: Request) {
       {
         role: "system",
         content:
-          "You write precise, production-ready prompts for AI interior design image generation. Return only the final prompt in English. Include composition, materials, lighting, camera, realism notes, practical design constraints, and a concise negative prompt.",
+          "You write precise, production-ready prompts for AI interior design image generation. Translate every Chinese selection, detail, and user keyword into natural English before writing. Return only the final prompt in English. Do not include any Chinese characters. Include composition, materials, lighting, camera, realism notes, practical design constraints, and a concise negative prompt.",
       },
       {
         role: "user",
@@ -72,7 +76,27 @@ User keywords: ${body.keywords || "none"}`,
     ],
   });
 
+  let prompt = response.output_text.trim();
+
+  if (containsChinese(prompt)) {
+    const rewrite = await client.responses.create({
+      model: config.model,
+      input: [
+        {
+          role: "system",
+          content:
+            "Rewrite the provided interior design image prompt into fluent English only. Translate all Chinese text. Return only the rewritten prompt. Do not include any Chinese characters.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+    });
+    prompt = rewrite.output_text.trim();
+  }
+
   return NextResponse.json({
-    prompt: response.output_text.trim(),
+    prompt,
   });
 }
