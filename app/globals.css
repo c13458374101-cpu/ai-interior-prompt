@@ -17,7 +17,7 @@
 
 body {
   margin: 0;
-  background: var(--paper);
+  background: #f4f3ee;
   color: var(--ink);
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -39,7 +39,7 @@ button {
 
 .hero {
   position: relative;
-  min-height: 46vh;
+  min-height: 500px;
   display: flex;
   align-items: flex-end;
   overflow: hidden;
@@ -57,14 +57,16 @@ button {
 .heroShade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(16, 20, 18, 0.86), rgba(16, 20, 18, 0.42) 42%, rgba(16, 20, 18, 0.12));
+  background:
+    linear-gradient(90deg, rgba(14, 18, 16, 0.9), rgba(14, 18, 16, 0.58) 39%, rgba(14, 18, 16, 0.12) 74%),
+    linear-gradient(180deg, rgba(14, 18, 16, 0.08), rgba(14, 18, 16, 0.4));
 }
 
 .heroContent {
   position: relative;
-  width: min(1180px, calc(100% - 40px));
+  width: min(1420px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 56px 0 46px;
+  padding: 72px 0 88px;
   color: white;
 }
 
@@ -80,14 +82,14 @@ button {
 
 h1 {
   margin: 0;
-  max-width: 760px;
+  max-width: 960px;
   font-size: clamp(42px, 7vw, 86px);
   line-height: 0.98;
   letter-spacing: 0;
 }
 
 .hero p {
-  max-width: 670px;
+  max-width: 760px;
   margin: 22px 0 0;
   color: rgba(255, 255, 255, 0.84);
   font-size: 18px;
@@ -95,26 +97,27 @@ h1 {
 }
 
 .workspace {
-  width: min(1180px, calc(100% - 40px));
-  margin: -24px auto 56px;
+  width: min(1420px, calc(100% - 48px));
+  margin: -32px auto 64px;
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.04fr) minmax(360px, 0.96fr);
-  gap: 18px;
+  grid-template-columns: minmax(560px, 1.05fr) minmax(460px, 0.95fr);
+  gap: 22px;
 }
 
 .panel {
   background: rgba(255, 255, 255, 0.96);
   border: 1px solid var(--line);
   border-radius: 8px;
-  box-shadow: 0 18px 45px rgba(36, 42, 38, 0.12);
+  box-shadow: 0 20px 48px rgba(36, 42, 38, 0.14);
+  backdrop-filter: blur(12px);
 }
 
 .controls {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-  padding: 22px;
+  gap: 28px 24px;
+  padding: 28px;
 }
 
 .group {
@@ -141,12 +144,13 @@ legend,
 }
 
 .chip {
-  min-height: 38px;
-  padding: 0 13px;
+  min-height: 42px;
+  padding: 0 18px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: #fbfbf8;
   color: var(--ink);
+  font-size: 16px;
 }
 
 .chipActive {
@@ -176,13 +180,13 @@ textarea {
 }
 
 select {
-  height: 44px;
-  padding: 0 12px;
+  height: 52px;
+  padding: 0 16px;
 }
 
 input {
-  height: 44px;
-  padding: 0 12px;
+  height: 52px;
+  padding: 0 16px;
 }
 
 textarea {
@@ -209,7 +213,7 @@ textarea:focus,
 }
 
 .output {
-  padding: 22px;
+  padding: 26px;
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -224,7 +228,8 @@ textarea:focus,
 
 h2 {
   margin: 4px 0 0;
-  font-size: 26px;
+  font-size: 30px;
+  line-height: 1.15;
   letter-spacing: 0;
 }
 
@@ -336,23 +341,24 @@ h2 {
 
 pre {
   flex: 1;
-  min-height: 420px;
+  min-height: 560px;
   margin: 0;
-  padding: 18px;
+  padding: 24px;
   overflow: auto;
   white-space: pre-wrap;
   word-break: break-word;
   border-radius: 8px;
   background: #202523;
   color: #f8f0e7;
-  font-size: 15px;
-  line-height: 1.7;
+  font-size: 16px;
+  line-height: 1.8;
+  font-family: "Courier New", Consolas, monospace;
 }
 
 @media (max-width: 900px) {
   .workspace {
     grid-template-columns: 1fr;
-    margin-top: 16px;
+    margin-top: -28px;
   }
 
   .controls {
@@ -365,9 +371,9 @@ pre {
 }
 
 @media (max-width: 560px) {
-  .heroContent,
+.heroContent,
   .workspace {
-    width: min(100% - 28px, 1180px);
+    width: min(100% - 28px, 1420px);
   }
 
   .heroContent {
