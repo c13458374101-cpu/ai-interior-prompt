@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, Dice5, Loader2, RotateCcw, Share2, Sparkles } from "lucide-react";
+import { Copy, Dice5, Loader2, RotateCcw, Share2, Sparkles, Wallet, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 const labels = {
@@ -19,6 +19,7 @@ const labels = {
   randomize: "\u968f\u673a\u751f\u6210",
   reset: "\u91cd\u7f6e",
   share: "\u5206\u4eab",
+  recharge: "\u5145\u503c",
   linkCopied: "\u94fe\u63a5\u5df2\u590d\u5236",
   aiOptimize: "AI \u4f18\u5316",
   generating: "\u751f\u6210\u4e2d",
@@ -26,6 +27,9 @@ const labels = {
   copied: "\u5df2\u590d\u5236",
   saveKey: "\u4fdd\u5b58 Key",
   keySaved: "\u5df2\u4fdd\u5b58\uff0c\u53ef\u518d\u6b21\u4f18\u5316",
+  rechargeTitle: "\u5145\u503c\u4e2d\u5fc3",
+  rechargeSubtitle: "\u5145\u503c\u540e\u53ef\u7528\u4e8e AI \u4f18\u5316\u6b21\u6570\uff0c\u9002\u5408\u540e\u7eed\u63a5\u5165 Stripe\u3001Creem\u3001\u652f\u4ed8\u5b9d\u6216\u5fae\u4fe1\u652f\u4ed8\u3002",
+  contactToEnable: "\u8054\u7cfb\u5f00\u901a\u652f\u4ed8",
   keywordPlaceholder:
     "\u4f8b\u5982\uff1a\u65e0\u4e3b\u706f\u3001\u5f27\u5f62\u95e8\u6d1e\u3001\u80e1\u6843\u6728\u3001\u9002\u5408\u5c0f\u6237\u578b",
 };
@@ -37,6 +41,11 @@ const palettes = ["\u7c73\u767d + \u80e1\u6843\u6728 + \u9ed1\u8272", "\u9f20\u5
 const materials = ["\u5929\u7136\u6728\u76ae", "\u5fae\u6c34\u6ce5", "\u6d1e\u77f3", "\u4e9a\u9ebb\u7ec7\u7269", "\u62c9\u4e1d\u91d1\u5c5e", "\u85e4\u7f16", "\u78e8\u7802\u73bb\u7483"];
 const budgets = ["\u7ecf\u6d4e\u9884\u7b97", "\u4e2d\u7b49\u9884\u7b97", "\u4e2d\u9ad8\u9884\u7b97", "\u9ad8\u7aef\u5b9a\u5236"];
 const cameras = ["wide-angle editorial photography", "35mm interior photography", "architectural digest style", "straight-on balanced composition"];
+const rechargePlans = [
+  { name: "\u4f53\u9a8c\u5305", price: "\u00a59", credits: "100 \u6b21 AI \u4f18\u5316" },
+  { name: "\u6807\u51c6\u5305", price: "\u00a529", credits: "500 \u6b21 AI \u4f18\u5316" },
+  { name: "\u4e13\u4e1a\u5305", price: "\u00a599", credits: "2500 \u6b21 AI \u4f18\u5316" },
+];
 
 const translations: Record<string, string> = {
   "\u5ba2\u5385": "living room",
@@ -185,6 +194,7 @@ export default function Home() {
   const [apiKey, setApiKey] = useState("");
   const [isSavingKey, setIsSavingKey] = useState(false);
   const [keySaved, setKeySaved] = useState(false);
+  const [showRecharge, setShowRecharge] = useState(false);
 
   useEffect(() => {
     const shareValue = new URLSearchParams(window.location.search).get("design");
@@ -421,6 +431,10 @@ export default function Home() {
                 <Share2 size={18} />
                 {shared ? labels.linkCopied : labels.share}
               </button>
+              <button className="rechargeButton" onClick={() => setShowRecharge(true)}>
+                <Wallet size={18} />
+                {labels.recharge}
+              </button>
               <button className="aiButton" onClick={generateWithAi} disabled={isGenerating}>
                 {isGenerating ? <Loader2 className="spin" size={18} /> : <Sparkles size={18} />}
                 {isGenerating ? labels.generating : labels.aiOptimize}
@@ -452,6 +466,33 @@ export default function Home() {
           <pre>{prompt}</pre>
         </aside>
       </section>
+
+      {showRecharge ? (
+        <div className="modalLayer" role="dialog" aria-modal="true" aria-labelledby="recharge-title">
+          <div className="modalPanel">
+            <button className="modalClose" onClick={() => setShowRecharge(false)} aria-label="Close">
+              <X size={20} />
+            </button>
+            <div className="modalHeader">
+              <Wallet size={24} />
+              <div>
+                <h3 id="recharge-title">{labels.rechargeTitle}</h3>
+                <p>{labels.rechargeSubtitle}</p>
+              </div>
+            </div>
+            <div className="plans">
+              {rechargePlans.map((plan) => (
+                <button className="planCard" key={plan.name}>
+                  <span>{plan.name}</span>
+                  <strong>{plan.price}</strong>
+                  <small>{plan.credits}</small>
+                </button>
+              ))}
+            </div>
+            <button className="payButton">{labels.contactToEnable}</button>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

@@ -246,7 +246,8 @@ h2 {
 .iconButton,
 .copyButton,
 .aiButton,
-.shareButton {
+.shareButton,
+.rechargeButton {
   height: 40px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -282,6 +283,16 @@ h2 {
   border-color: var(--gold);
   background: #fff7e8;
   color: #5b4020;
+  font-weight: 700;
+}
+
+.rechargeButton {
+  gap: 8px;
+  min-width: 104px;
+  padding: 0 14px;
+  border-color: #d7c1a0;
+  background: #fffdf8;
+  color: #4f3a22;
   font-weight: 700;
 }
 
@@ -339,6 +350,97 @@ h2 {
 .saveKeyButton:disabled {
   cursor: not-allowed;
   opacity: 0.62;
+}
+
+.modalLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(15, 18, 16, 0.55);
+}
+
+.modalPanel {
+  position: relative;
+  width: min(560px, 100%);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdfa;
+  padding: 28px;
+  box-shadow: 0 28px 90px rgba(15, 18, 16, 0.32);
+}
+
+.modalClose {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalHeader {
+  display: flex;
+  gap: 14px;
+  padding-right: 46px;
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.15;
+}
+
+.modalHeader p {
+  margin: 10px 0 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.plans {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.planCard {
+  min-height: 138px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfbf8;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  text-align: left;
+}
+
+.planCard strong {
+  font-size: 28px;
+  color: var(--clay);
+}
+
+.planCard small {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.payButton {
+  width: 100%;
+  height: 48px;
+  border: 1px solid var(--charcoal);
+  border-radius: 8px;
+  background: var(--charcoal);
+  color: white;
+  font-weight: 700;
 }
 
 pre {
@@ -406,6 +508,14 @@ pre {
 
   .shareButton {
     flex: 1;
+  }
+
+  .rechargeButton {
+    flex: 1;
+  }
+
+  .plans {
+    grid-template-columns: 1fr;
   }
 
   .keyBox {
