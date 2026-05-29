@@ -30,6 +30,14 @@ const labels = {
   rechargeTitle: "\u5145\u503c\u4e2d\u5fc3",
   rechargeSubtitle: "\u5145\u503c\u540e\u53ef\u7528\u4e8e AI \u4f18\u5316\u6b21\u6570\uff0c\u9002\u5408\u540e\u7eed\u63a5\u5165 Stripe\u3001Creem\u3001\u652f\u4ed8\u5b9d\u6216\u5fae\u4fe1\u652f\u4ed8\u3002",
   contactToEnable: "\u8054\u7cfb\u5f00\u901a\u652f\u4ed8",
+  manualPayTitle: "\u4eba\u5de5\u5145\u503c\u6d41\u7a0b",
+  customerId: "\u5ba2\u6237\u7f16\u53f7",
+  paymentRemark: "\u4ed8\u6b3e\u5907\u6ce8",
+  serviceContact: "\u5ba2\u670d\u5fae\u4fe1",
+  copyOrder: "\u590d\u5236\u5145\u503c\u4fe1\u606f",
+  orderCopied: "\u5145\u503c\u4fe1\u606f\u5df2\u590d\u5236",
+  manualPayNote:
+    "\u7528\u6237\u4ed8\u6b3e\u540e\uff0c\u628a\u5145\u503c\u4fe1\u606f\u53d1\u7ed9\u4f60\uff0c\u4f60\u518d\u624b\u52a8\u4e3a\u8be5\u5ba2\u6237\u52a0 AI \u4f18\u5316\u6b21\u6570\u3002",
   keywordPlaceholder:
     "\u4f8b\u5982\uff1a\u65e0\u4e3b\u706f\u3001\u5f27\u5f62\u95e8\u6d1e\u3001\u80e1\u6843\u6728\u3001\u9002\u5408\u5c0f\u6237\u578b",
 };
@@ -46,6 +54,7 @@ const rechargePlans = [
   { name: "\u6807\u51c6\u5305", price: "\u00a529", credits: "500 \u6b21 AI \u4f18\u5316" },
   { name: "\u4e13\u4e1a\u5305", price: "\u00a599", credits: "2500 \u6b21 AI \u4f18\u5316" },
 ];
+const serviceWechat = "your_wechat_id";
 
 const translations: Record<string, string> = {
   "\u5ba2\u5385": "living room",
@@ -195,6 +204,9 @@ export default function Home() {
   const [isSavingKey, setIsSavingKey] = useState(false);
   const [keySaved, setKeySaved] = useState(false);
   const [showRecharge, setShowRecharge] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(rechargePlans[1]);
+  const [customerId, setCustomerId] = useState("");
+  const [orderCopied, setOrderCopied] = useState(false);
 
   useEffect(() => {
     const shareValue = new URLSearchParams(window.location.search).get("design");
@@ -204,6 +216,18 @@ export default function Home() {
     if (sharedState) {
       setState(sharedState);
     }
+  }, []);
+
+  useEffect(() => {
+    const existing = window.localStorage.getItem("interior_prompt_customer_id");
+    if (existing) {
+      setCustomerId(existing);
+      return;
+    }
+
+    const created = `AIP-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    window.localStorage.setItem("interior_prompt_customer_id", created);
+    setCustomerId(created);
   }, []);
 
   const localPrompt = useMemo(() => {
@@ -319,6 +343,19 @@ export default function Home() {
     } finally {
       setIsSavingKey(false);
     }
+  };
+
+  const copyRechargeInfo = async () => {
+    const info = [
+      `${labels.customerId}: ${customerId}`,
+      `${labels.paymentRemark}: ${customerId} / ${selectedPlan.name} / ${selectedPlan.price}`,
+      `${labels.serviceContact}: ${serviceWechat}`,
+      `${selectedPlan.name}: ${selectedPlan.credits}`,
+    ].join("\n");
+
+    await navigator.clipboard.writeText(info);
+    setOrderCopied(true);
+    window.setTimeout(() => setOrderCopied(false), 1800);
   };
 
   return (
@@ -482,14 +519,32 @@ export default function Home() {
             </div>
             <div className="plans">
               {rechargePlans.map((plan) => (
-                <button className="planCard" key={plan.name}>
+                <button className={selectedPlan.name === plan.name ? "planCard planCardActive" : "planCard"} key={plan.name} onClick={() => setSelectedPlan(plan)}>
                   <span>{plan.name}</span>
                   <strong>{plan.price}</strong>
                   <small>{plan.credits}</small>
                 </button>
               ))}
             </div>
-            <button className="payButton">{labels.contactToEnable}</button>
+            <div className="manualPayBox">
+              <h4>{labels.manualPayTitle}</h4>
+              <dl>
+                <div>
+                  <dt>{labels.customerId}</dt>
+                  <dd>{customerId}</dd>
+                </div>
+                <div>
+                  <dt>{labels.paymentRemark}</dt>
+                  <dd>{customerId} / {selectedPlan.name} / {selectedPlan.price}</dd>
+                </div>
+                <div>
+                  <dt>{labels.serviceContact}</dt>
+                  <dd>{serviceWechat}</dd>
+                </div>
+              </dl>
+              <p>{labels.manualPayNote}</p>
+            </div>
+            <button className="payButton" onClick={copyRechargeInfo}>{orderCopied ? labels.orderCopied : labels.copyOrder}</button>
           </div>
         </div>
       ) : null}
