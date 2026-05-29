@@ -28,16 +28,16 @@ const labels = {
   saveKey: "\u4fdd\u5b58 Key",
   keySaved: "\u5df2\u4fdd\u5b58\uff0c\u53ef\u518d\u6b21\u4f18\u5316",
   rechargeTitle: "\u5145\u503c\u4e2d\u5fc3",
-  rechargeSubtitle: "\u5145\u503c\u540e\u53ef\u7528\u4e8e AI \u4f18\u5316\u6b21\u6570\uff0c\u9002\u5408\u540e\u7eed\u63a5\u5165 Stripe\u3001Creem\u3001\u652f\u4ed8\u5b9d\u6216\u5fae\u4fe1\u652f\u4ed8\u3002",
-  contactToEnable: "\u8054\u7cfb\u5f00\u901a\u652f\u4ed8",
-  manualPayTitle: "\u4eba\u5de5\u5145\u503c\u6d41\u7a0b",
+  rechargeSubtitle: "\u9009\u62e9\u5957\u9910\u540e\uff0c\u4f7f\u7528\u652f\u4ed8\u5b9d\u6216\u5fae\u4fe1\u626b\u7801\u4ed8\u6b3e\u3002\u4ed8\u6b3e\u540e\u590d\u5236\u4e0b\u65b9\u5145\u503c\u4fe1\u606f\u53d1\u7ed9\u5ba2\u670d\u6838\u5bf9\u3002",
+  manualPayTitle: "\u626b\u7801\u652f\u4ed8",
   customerId: "\u5ba2\u6237\u7f16\u53f7",
   paymentRemark: "\u4ed8\u6b3e\u5907\u6ce8",
-  serviceContact: "\u5ba2\u670d\u5fae\u4fe1",
+  alipay: "\u652f\u4ed8\u5b9d",
+  wechatPay: "\u5fae\u4fe1\u652f\u4ed8",
   copyOrder: "\u590d\u5236\u5145\u503c\u4fe1\u606f",
   orderCopied: "\u5145\u503c\u4fe1\u606f\u5df2\u590d\u5236",
   manualPayNote:
-    "\u7528\u6237\u4ed8\u6b3e\u540e\uff0c\u628a\u5145\u503c\u4fe1\u606f\u53d1\u7ed9\u4f60\uff0c\u4f60\u518d\u624b\u52a8\u4e3a\u8be5\u5ba2\u6237\u52a0 AI \u4f18\u5316\u6b21\u6570\u3002",
+    "\u8bf7\u6309\u5f53\u524d\u9009\u4e2d\u5957\u9910\u91d1\u989d\u4ed8\u6b3e\u3002\u6838\u5bf9\u5230\u8d26\u540e\uff0c\u4f1a\u4e3a\u5bf9\u5e94\u5ba2\u6237\u7f16\u53f7\u589e\u52a0 AI \u4f18\u5316\u6b21\u6570\u3002",
   keywordPlaceholder:
     "\u4f8b\u5982\uff1a\u65e0\u4e3b\u706f\u3001\u5f27\u5f62\u95e8\u6d1e\u3001\u80e1\u6843\u6728\u3001\u9002\u5408\u5c0f\u6237\u578b",
 };
@@ -54,7 +54,6 @@ const rechargePlans = [
   { name: "\u6807\u51c6\u5305", price: "\u00a529", credits: "500 \u6b21 AI \u4f18\u5316" },
   { name: "\u4e13\u4e1a\u5305", price: "\u00a599", credits: "2500 \u6b21 AI \u4f18\u5316" },
 ];
-const serviceWechat = "your_wechat_id";
 
 const translations: Record<string, string> = {
   "\u5ba2\u5385": "living room",
@@ -349,7 +348,6 @@ export default function Home() {
     const info = [
       `${labels.customerId}: ${customerId}`,
       `${labels.paymentRemark}: ${customerId} / ${selectedPlan.name} / ${selectedPlan.price}`,
-      `${labels.serviceContact}: ${serviceWechat}`,
       `${selectedPlan.name}: ${selectedPlan.credits}`,
     ].join("\n");
 
@@ -528,6 +526,16 @@ export default function Home() {
             </div>
             <div className="manualPayBox">
               <h4>{labels.manualPayTitle}</h4>
+              <div className="qrGrid">
+                <figure className="qrCard">
+                  <img src="/images/alipay-qr.jpg" alt={labels.alipay} />
+                  <figcaption>{labels.alipay}</figcaption>
+                </figure>
+                <figure className="qrCard">
+                  <img src="/images/wechat-pay-qr.jpg" alt={labels.wechatPay} />
+                  <figcaption>{labels.wechatPay}</figcaption>
+                </figure>
+              </div>
               <dl>
                 <div>
                   <dt>{labels.customerId}</dt>
@@ -536,10 +544,6 @@ export default function Home() {
                 <div>
                   <dt>{labels.paymentRemark}</dt>
                   <dd>{customerId} / {selectedPlan.name} / {selectedPlan.price}</dd>
-                </div>
-                <div>
-                  <dt>{labels.serviceContact}</dt>
-                  <dd>{serviceWechat}</dd>
                 </div>
               </dl>
               <p>{labels.manualPayNote}</p>
