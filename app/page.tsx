@@ -358,149 +358,143 @@ export default function Home() {
 
   return (
     <main className="shell">
-      <section className="hero" aria-label="AI interior design prompt generator">
-        <div className="heroImage" />
-        <div className="heroShade" />
-        <div className="heroContent">
-          <div className="brand">
-            <Sparkles size={18} aria-hidden="true" />
-            AI Interior Prompt Studio
+      <div className="appFrame">
+        <header className="topbar">
+          <div className="brandBlock" aria-label="StudioRender">
+            <strong>STUDIORENDER</strong>
+            <span>室内渲染提示词工作台</span>
           </div>
-          <h1>{labels.title}</h1>
-          <p>{labels.subtitle}</p>
-        </div>
-      </section>
+          <div className="navActions">
+            <button className="navIconButton" onClick={randomize} aria-label={labels.randomize} title={labels.randomize}>
+              <Dice5 size={18} />
+            </button>
+            <button className="navIconButton" onClick={() => updateState(initialState)} aria-label={labels.reset} title={labels.reset}>
+              <RotateCcw size={18} />
+            </button>
+            <button className="navButton" onClick={shareDesign}>
+              <Share2 size={18} />
+              <span>{shared ? labels.linkCopied : labels.share}</span>
+            </button>
+            <button className="navButton" onClick={() => setShowRecharge(true)}>
+              <Wallet size={18} />
+              <span>{labels.recharge}</span>
+            </button>
+            <button className="navButton primaryButton" onClick={generateWithAi} disabled={isGenerating}>
+              {isGenerating ? <Loader2 className="spin" size={18} /> : <Sparkles size={18} />}
+              <span>{isGenerating ? labels.generating : labels.aiOptimize}</span>
+            </button>
+            <button className="navButton darkButton" onClick={copyPrompt}>
+              <Copy size={18} />
+              <span>{copied ? labels.copied : labels.copy}</span>
+            </button>
+          </div>
+        </header>
 
-      <section className="workspace">
-        <form className="panel controls">
-          <ControlGroup label={labels.space}>
-            {spaces.map((space) => (
-              <button className={optionButton(state.space === space)} key={space} onClick={(event) => {
-                event.preventDefault();
-                updateState({ space });
-              }}>
-                {space}
-              </button>
-            ))}
-          </ControlGroup>
-
-          <ControlGroup label={labels.style}>
-            {styles.map((style) => (
-              <button className={optionButton(state.style === style)} key={style} onClick={(event) => {
-                event.preventDefault();
-                updateState({ style });
-              }}>
-                {style}
-              </button>
-            ))}
-          </ControlGroup>
-
-          <ControlGroup label={labels.mood}>
-            {moods.map((mood) => (
-              <button className={optionButton(state.mood === mood)} key={mood} onClick={(event) => {
-                event.preventDefault();
-                updateState({ mood });
-              }}>
-                {mood}
-              </button>
-            ))}
-          </ControlGroup>
-
-          <label className="field">
-            <span>{labels.palette}</span>
-            <select value={state.palette} onChange={(event) => updateState({ palette: event.target.value })}>
-              {palettes.map((palette) => (
-                <option key={palette}>{palette}</option>
+        <section className="workspace">
+          <form className="controls" aria-label="Prompt controls">
+            <ControlGroup label={labels.space}>
+              {spaces.map((space) => (
+                <button className={optionButton(state.space === space)} key={space} onClick={(event) => {
+                  event.preventDefault();
+                  updateState({ space });
+                }}>
+                  {space}
+                </button>
               ))}
-            </select>
-          </label>
+            </ControlGroup>
 
-          <label className="field">
-            <span>{labels.material}</span>
-            <select value={state.material} onChange={(event) => updateState({ material: event.target.value })}>
-              {materials.map((material) => (
-                <option key={material}>{material}</option>
+            <ControlGroup label={labels.style}>
+              {styles.map((style) => (
+                <button className={optionButton(state.style === style)} key={style} onClick={(event) => {
+                  event.preventDefault();
+                  updateState({ style });
+                }}>
+                  {style}
+                </button>
               ))}
-            </select>
-          </label>
+            </ControlGroup>
 
-          <label className="field">
-            <span>{labels.budget}</span>
-            <select value={state.budget} onChange={(event) => updateState({ budget: event.target.value })}>
-              {budgets.map((budget) => (
-                <option key={budget}>{budget}</option>
+            <ControlGroup label={labels.mood}>
+              {moods.map((mood) => (
+                <button className={optionButton(state.mood === mood)} key={mood} onClick={(event) => {
+                  event.preventDefault();
+                  updateState({ mood });
+                }}>
+                  {mood}
+                </button>
               ))}
-            </select>
-          </label>
+            </ControlGroup>
 
-          <label className="field wide">
-            <span>{labels.detail}</span>
-            <textarea value={state.detail} onChange={(event) => updateState({ detail: event.target.value })} />
-          </label>
+            <label className="field">
+              <span>{labels.palette}</span>
+              <select value={state.palette} onChange={(event) => updateState({ palette: event.target.value })}>
+                {palettes.map((palette) => (
+                  <option key={palette}>{palette}</option>
+                ))}
+              </select>
+            </label>
 
-          <label className="field wide">
-            <span>{labels.keywords}</span>
-            <textarea
-              className="keywordsInput"
-              value={state.keywords}
-              onChange={(event) => updateState({ keywords: event.target.value })}
-              placeholder={labels.keywordPlaceholder}
-            />
-          </label>
-        </form>
+            <label className="field">
+              <span>{labels.material}</span>
+              <select value={state.material} onChange={(event) => updateState({ material: event.target.value })}>
+                {materials.map((material) => (
+                  <option key={material}>{material}</option>
+                ))}
+              </select>
+            </label>
 
-        <aside className="panel output">
-          <div className="outputTop">
-            <div>
+            <label className="field">
+              <span>{labels.budget}</span>
+              <select value={state.budget} onChange={(event) => updateState({ budget: event.target.value })}>
+                {budgets.map((budget) => (
+                  <option key={budget}>{budget}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="field wide">
+              <span>{labels.detail}</span>
+              <textarea value={state.detail} onChange={(event) => updateState({ detail: event.target.value })} />
+            </label>
+
+            <label className="field wide">
+              <span>{labels.keywords}</span>
+              <textarea
+                className="keywordsInput"
+                value={state.keywords}
+                onChange={(event) => updateState({ keywords: event.target.value })}
+                placeholder={labels.keywordPlaceholder}
+              />
+            </label>
+          </form>
+
+          <aside className="output">
+            <div className="outputTop">
               <span className="eyebrow">Generated Prompt</span>
               <h2>{labels.generatedPrompt}</h2>
             </div>
-            <div className="actions">
-              <button className="iconButton" onClick={randomize} aria-label={labels.randomize} title={labels.randomize}>
-                <Dice5 size={18} />
-              </button>
-              <button className="iconButton" onClick={() => updateState(initialState)} aria-label={labels.reset} title={labels.reset}>
-                <RotateCcw size={18} />
-              </button>
-              <button className="shareButton" onClick={shareDesign}>
-                <Share2 size={18} />
-                {shared ? labels.linkCopied : labels.share}
-              </button>
-              <button className="rechargeButton" onClick={() => setShowRecharge(true)}>
-                <Wallet size={18} />
-                {labels.recharge}
-              </button>
-              <button className="aiButton" onClick={generateWithAi} disabled={isGenerating}>
-                {isGenerating ? <Loader2 className="spin" size={18} /> : <Sparkles size={18} />}
-                {isGenerating ? labels.generating : labels.aiOptimize}
-              </button>
-              <button className="copyButton" onClick={copyPrompt}>
-                <Copy size={18} />
-                {copied ? labels.copied : labels.copy}
-              </button>
-            </div>
-          </div>
-          {error ? <p className="errorText">{error}</p> : null}
-          {error.includes("OPENAI_API_KEY") || keySaved ? (
-            <div className="keyBox">
-              <label className="field">
-                <span>OpenAI API Key</span>
-                <input
-                  value={apiKey}
-                  onChange={(event) => setApiKey(event.target.value)}
-                  placeholder="sk-..."
-                  type="password"
-                />
-              </label>
-              <button className="saveKeyButton" onClick={saveApiKey} disabled={isSavingKey || apiKey.length < 20}>
-                {isSavingKey ? <Loader2 className="spin" size={18} /> : <Sparkles size={18} />}
-                {keySaved ? labels.keySaved : labels.saveKey}
-              </button>
-            </div>
-          ) : null}
-          <pre>{prompt}</pre>
-        </aside>
-      </section>
+            {error ? <p className="errorText">{error}</p> : null}
+            {error.includes("OPENAI_API_KEY") || keySaved ? (
+              <div className="keyBox">
+                <label className="field">
+                  <span>OpenAI API Key</span>
+                  <input
+                    value={apiKey}
+                    onChange={(event) => setApiKey(event.target.value)}
+                    placeholder="sk-..."
+                    type="password"
+                  />
+                </label>
+                <button className="saveKeyButton" onClick={saveApiKey} disabled={isSavingKey || apiKey.length < 20}>
+                  {isSavingKey ? <Loader2 className="spin" size={18} /> : <Sparkles size={18} />}
+                  {keySaved ? labels.keySaved : labels.saveKey}
+                </button>
+              </div>
+            ) : null}
+            <pre>{prompt}</pre>
+          </aside>
+        </section>
+      </div>
 
       {showRecharge ? (
         <div className="modalLayer" role="dialog" aria-modal="true" aria-labelledby="recharge-title">
