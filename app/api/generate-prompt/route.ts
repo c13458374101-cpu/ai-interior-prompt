@@ -6,9 +6,12 @@ type PromptRequest = {
   space: string;
   style: string;
   mood: string;
+  lighting: number;
   palette: string;
   budget: string;
-  material: string;
+  materials: string[];
+  material?: string;
+  engine: string;
   camera: string;
   detail: string;
   keywords: string;
@@ -39,7 +42,6 @@ export async function POST(request: Request) {
     "mood",
     "palette",
     "budget",
-    "material",
     "camera",
     "detail",
   ];
@@ -51,6 +53,10 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
+
+  const selectedMaterials = Array.isArray(body.materials) && body.materials.length > 0
+    ? body.materials.join(", ")
+    : body.material || "not specified";
 
   const response = await client.responses.create({
     model: config.model,
@@ -66,9 +72,11 @@ export async function POST(request: Request) {
 Space: ${body.space}
 Style: ${body.style}
 Mood: ${body.mood}
+Lighting level: ${typeof body.lighting === "number" ? body.lighting : "balanced"}
 Palette: ${body.palette}
 Budget: ${body.budget}
-Primary material: ${body.material}
+Materials: ${selectedMaterials}
+Render engine: ${body.engine || "not specified"}
 Camera: ${body.camera}
 Key details: ${body.detail}
 User keywords: ${body.keywords || "none"}`,

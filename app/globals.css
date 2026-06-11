@@ -178,6 +178,12 @@ button {
   background: var(--soft);
 }
 
+.controlCard {
+  padding: 18px;
+  border-radius: 20px;
+  background: var(--control);
+}
+
 .group {
   min-width: 0;
   margin: 0;
@@ -268,6 +274,89 @@ textarea {
   min-height: 76px;
 }
 
+.sliderGroup {
+  display: grid;
+  gap: 14px;
+}
+
+.sliderLabels {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.lightingSlider {
+  height: 28px;
+  padding: 0;
+  accent-color: var(--blue);
+  background: transparent;
+}
+
+.checkGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.checkCard {
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid #d2d2d7;
+  border-radius: 14px;
+  background: white;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.checkCard:hover {
+  transform: scale(0.99);
+}
+
+.checkCard input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--ink);
+}
+
+.checkCardActive {
+  border-color: var(--ink);
+  background: white;
+}
+
+.segmentControl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border-radius: 16px;
+  background: #e8e8ed;
+}
+
+.segmentButton {
+  min-height: 38px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.segmentButtonActive {
+  background: white;
+  color: var(--ink);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+}
+
 select:focus,
 input:focus,
 textarea:focus,
@@ -343,14 +432,12 @@ h2 {
   opacity: 0.62;
 }
 
-pre {
+.promptBox {
   flex: 1;
   min-height: 520px;
   margin: 0;
   padding: 0;
   overflow: auto;
-  white-space: pre-wrap;
-  word-break: break-word;
   border: 0;
   border-radius: 0;
   background: white;
@@ -358,6 +445,11 @@ pre {
   font-size: 18px;
   line-height: 1.72;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+  resize: none;
+}
+
+.promptBox::placeholder {
+  color: var(--muted);
 }
 
 .modalLayer {
@@ -608,14 +700,16 @@ pre {
     font-size: 28px;
   }
 
-  pre {
+  .promptBox {
     min-height: 420px;
     font-size: 16px;
   }
 
   .keyBox,
   .plans,
-  .qrGrid {
+  .qrGrid,
+  .checkGrid,
+  .segmentControl {
     grid-template-columns: 1fr;
   }
 

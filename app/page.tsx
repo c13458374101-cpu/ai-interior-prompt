@@ -10,12 +10,17 @@ const labels = {
   space: "\u7a7a\u95f4",
   style: "\u98ce\u683c",
   mood: "\u6c1b\u56f4",
+  lighting: "\u5149\u5f71\u73af\u5883",
+  lightingSoft: "\u81ea\u7136\u67d4\u5149",
+  lightingGolden: "\u508d\u665a\u9ec4\u660f",
   palette: "\u914d\u8272",
-  material: "\u4e3b\u8981\u6750\u8d28",
+  materials: "\u6750\u8d28\u7ec6\u8282",
   budget: "\u9884\u7b97\u5b9a\u4f4d",
+  engine: "\u6e32\u67d3\u5f15\u64ce",
   detail: "\u5173\u952e\u7ec6\u8282",
   keywords: "\u5173\u952e\u8bcd",
   generatedPrompt: "\u53ef\u590d\u5236\u63d0\u793a\u8bcd",
+  promptPlaceholder: "\u9009\u62e9\u5de6\u4fa7\u53c2\u6570\uff0c\u5728\u6b64\u81ea\u52a8\u751f\u6210\u5927\u5e08\u7ea7\u6e32\u67d3\u63d0\u793a\u8bcd...",
   randomize: "\u968f\u673a\u751f\u6210",
   reset: "\u91cd\u7f6e",
   share: "\u5206\u4eab",
@@ -49,6 +54,7 @@ const palettes = ["\u7c73\u767d + \u80e1\u6843\u6728 + \u9ed1\u8272", "\u9f20\u5
 const materials = ["\u5929\u7136\u6728\u76ae", "\u5fae\u6c34\u6ce5", "\u6d1e\u77f3", "\u4e9a\u9ebb\u7ec7\u7269", "\u62c9\u4e1d\u91d1\u5c5e", "\u85e4\u7f16", "\u78e8\u7802\u73bb\u7483"];
 const budgets = ["\u7ecf\u6d4e\u9884\u7b97", "\u4e2d\u7b49\u9884\u7b97", "\u4e2d\u9ad8\u9884\u7b97", "\u9ad8\u7aef\u5b9a\u5236"];
 const cameras = ["wide-angle editorial photography", "35mm interior photography", "architectural digest style", "straight-on balanced composition"];
+const engines = ["Octane Render", "Unreal Engine 5", "V-Ray"];
 const rechargePlans = [
   { name: "\u4f53\u9a8c\u5305", price: "\u00a59", credits: "100 \u6b21 AI \u4f18\u5316" },
   { name: "\u6807\u51c6\u5305", price: "\u00a529", credits: "500 \u6b21 AI \u4f18\u5316" },
@@ -128,9 +134,11 @@ type PromptState = {
   space: string;
   style: string;
   mood: string;
+  lighting: number;
   palette: string;
   budget: string;
-  material: string;
+  materials: string[];
+  engine: string;
   camera: string;
   detail: string;
   keywords: string;
@@ -140,9 +148,11 @@ const initialState: PromptState = {
   space: "\u5ba2\u5385",
   style: "\u73b0\u4ee3\u6781\u7b80",
   mood: "\u6e29\u6696\u677e\u5f1b",
+  lighting: 42,
   palette: "\u6696\u767d + \u6a61\u6728 + \u4e9a\u9ebb",
   budget: "\u4e2d\u9ad8\u9884\u7b97",
-  material: "\u5929\u7136\u6728\u76ae",
+  materials: ["\u5929\u7136\u6728\u76ae", "\u5fae\u6c34\u6ce5", "\u62c9\u4e1d\u91d1\u5c5e"],
+  engine: "Unreal Engine 5",
   camera: "35mm interior photography",
   detail: "\u5e26\u6709\u5f27\u5f62\u6c99\u53d1\u3001\u843d\u5730\u7a97\u3001\u9690\u85cf\u5f0f\u706f\u5e26\u548c\u4f4e\u77ee\u8336\u51e0",
   keywords: "\u5f27\u5f62\u5143\u7d20, \u9690\u85cf\u6536\u7eb3, \u6e29\u6da6\u6728\u4f5c",
@@ -179,14 +189,28 @@ function translateList(value: string) {
     .join(", ");
 }
 
+function lightingDescription(value: number) {
+  if (value < 34) return "soft natural daylight, clean morning shadows";
+  if (value < 67) return "balanced soft daylight with subtle architectural lighting";
+  return "warm golden-hour light, gentle dusk glow, soft elongated shadows";
+}
+
 function encodeShareState(state: PromptState) {
   return btoa(unescape(encodeURIComponent(JSON.stringify(state))));
 }
 
 function decodeShareState(value: string): PromptState | null {
   try {
-    const parsed = JSON.parse(decodeURIComponent(escape(atob(value)))) as Partial<PromptState>;
-    return { ...initialState, ...parsed };
+    const parsed = JSON.parse(decodeURIComponent(escape(atob(value)))) as Partial<PromptState> & { material?: string };
+    return {
+      ...initialState,
+      ...parsed,
+      materials: Array.isArray(parsed.materials)
+        ? parsed.materials
+        : parsed.material
+          ? [parsed.material]
+          : initialState.materials,
+    };
   } catch {
     return null;
   }
@@ -230,11 +254,14 @@ export default function Home() {
   }, []);
 
   const localPrompt = useMemo(() => {
+    const selectedMaterials = state.materials.length > 0 ? state.materials : initialState.materials;
+
     return [
       `A ${translate(state.style)} ${translate(state.space)} interior design concept, ${translate(state.mood)}, ${translateList(state.detail)}.`,
       `User keywords: ${translateList(state.keywords) || "none"}.`,
-      `Use a ${translate(state.palette)} color palette with ${translate(state.material)}, layered textures, refined furniture proportions, realistic spatial depth, and tasteful styling.`,
-      "Lighting: soft natural daylight mixed with subtle architectural lighting, clean shadows, premium residential atmosphere.",
+      `Use a ${translate(state.palette)} color palette with ${translateList(selectedMaterials.join(", "))}, layered textures, refined furniture proportions, realistic spatial depth, and tasteful styling.`,
+      `Lighting: ${lightingDescription(state.lighting)}, premium residential atmosphere.`,
+      `Render engine: ${state.engine}, photorealistic high-end interior visualization pipeline.`,
       `Camera: ${state.camera}, eye-level perspective, professionally composed, magazine-quality photorealistic render.`,
       `Design constraints: ${translate(state.budget)}, practical circulation, no clutter, cohesive materials, no visible brand logos.`,
       "Negative prompt: low resolution, distorted furniture, warped walls, messy composition, overdecorated styling, fake plants overload, unreadable text, watermark, people.",
@@ -250,14 +277,37 @@ export default function Home() {
     setShared(false);
   };
 
+  const toggleMaterial = (material: string) => {
+    setState((current) => {
+      const isSelected = current.materials.includes(material);
+      const nextMaterials = isSelected
+        ? current.materials.filter((item) => item !== material)
+        : [...current.materials, material];
+
+      return {
+        ...current,
+        materials: nextMaterials.length > 0 ? nextMaterials : current.materials,
+      };
+    });
+    setAiPrompt("");
+    setError("");
+    setShared(false);
+  };
+
   const randomize = () => {
+    const firstMaterial = pick(materials);
+    const secondMaterial = pick(materials.filter((material) => material !== firstMaterial));
+    const thirdMaterial = pick(materials.filter((material) => material !== firstMaterial && material !== secondMaterial));
+
     setState({
       space: pick(spaces),
       style: pick(styles),
       mood: pick(moods),
+      lighting: Math.floor(18 + Math.random() * 72),
       palette: pick(palettes),
       budget: pick(budgets),
-      material: pick(materials),
+      materials: [firstMaterial, secondMaterial, thirdMaterial],
+      engine: pick(engines),
       camera: pick(cameras),
       detail: pick([
         "\u5e26\u6709\u6a21\u5757\u5316\u6c99\u53d1\u3001\u827a\u672f\u6302\u753b\u548c\u67d4\u548c\u7a97\u5e18",
@@ -392,16 +442,14 @@ export default function Home() {
 
         <section className="workspace">
           <form className="controls" aria-label="Prompt controls">
-            <ControlGroup label={labels.space}>
-              {spaces.map((space) => (
-                <button className={optionButton(state.space === space)} key={space} onClick={(event) => {
-                  event.preventDefault();
-                  updateState({ space });
-                }}>
-                  {space}
-                </button>
-              ))}
-            </ControlGroup>
+            <label className="field controlCard">
+              <span>{labels.space}</span>
+              <select value={state.space} onChange={(event) => updateState({ space: event.target.value })}>
+                {spaces.map((space) => (
+                  <option key={space}>{space}</option>
+                ))}
+              </select>
+            </label>
 
             <ControlGroup label={labels.style}>
               {styles.map((style) => (
@@ -414,31 +462,62 @@ export default function Home() {
               ))}
             </ControlGroup>
 
-            <ControlGroup label={labels.mood}>
-              {moods.map((mood) => (
-                <button className={optionButton(state.mood === mood)} key={mood} onClick={(event) => {
-                  event.preventDefault();
-                  updateState({ mood });
-                }}>
-                  {mood}
-                </button>
-              ))}
-            </ControlGroup>
+            <fieldset className="group sliderGroup">
+              <legend>{labels.lighting}</legend>
+              <div className="sliderLabels">
+                <span>{labels.lightingSoft}</span>
+                <span>{labels.lightingGolden}</span>
+              </div>
+              <input
+                aria-label={labels.lighting}
+                className="lightingSlider"
+                max="100"
+                min="0"
+                type="range"
+                value={state.lighting}
+                onChange={(event) => updateState({ lighting: Number(event.target.value) })}
+              />
+            </fieldset>
+
+            <fieldset className="group">
+              <legend>{labels.materials}</legend>
+              <div className="checkGrid">
+                {materials.map((material) => (
+                  <label className={state.materials.includes(material) ? "checkCard checkCardActive" : "checkCard"} key={material}>
+                    <input
+                      checked={state.materials.includes(material)}
+                      onChange={() => toggleMaterial(material)}
+                      type="checkbox"
+                    />
+                    <span>{material}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset className="group">
+              <legend>{labels.engine}</legend>
+              <div className="segmentControl">
+                {engines.map((engine) => (
+                  <button
+                    className={state.engine === engine ? "segmentButton segmentButtonActive" : "segmentButton"}
+                    key={engine}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      updateState({ engine });
+                    }}
+                  >
+                    {engine}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
 
             <label className="field">
               <span>{labels.palette}</span>
               <select value={state.palette} onChange={(event) => updateState({ palette: event.target.value })}>
                 {palettes.map((palette) => (
                   <option key={palette}>{palette}</option>
-                ))}
-              </select>
-            </label>
-
-            <label className="field">
-              <span>{labels.material}</span>
-              <select value={state.material} onChange={(event) => updateState({ material: event.target.value })}>
-                {materials.map((material) => (
-                  <option key={material}>{material}</option>
                 ))}
               </select>
             </label>
@@ -451,6 +530,17 @@ export default function Home() {
                 ))}
               </select>
             </label>
+
+            <ControlGroup label={labels.mood}>
+              {moods.map((mood) => (
+                <button className={optionButton(state.mood === mood)} key={mood} onClick={(event) => {
+                  event.preventDefault();
+                  updateState({ mood });
+                }}>
+                  {mood}
+                </button>
+              ))}
+            </ControlGroup>
 
             <label className="field wide">
               <span>{labels.detail}</span>
@@ -491,7 +581,12 @@ export default function Home() {
                 </button>
               </div>
             ) : null}
-            <pre>{prompt}</pre>
+            <textarea
+              className="promptBox"
+              value={prompt}
+              onChange={(event) => setAiPrompt(event.target.value)}
+              placeholder={labels.promptPlaceholder}
+            />
           </aside>
         </section>
       </div>
