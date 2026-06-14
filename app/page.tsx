@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, Dice5, Loader2, RotateCcw, Share2, Sparkles, Wallet, X } from "lucide-react";
+import { Copy, Dice5, Loader2, Pencil, RotateCcw, Save, Share2, Sparkles, Wallet, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 const labels = {
@@ -33,6 +33,14 @@ const labels = {
   reset: "\u91cd\u7f6e",
   share: "\u5206\u4eab",
   recharge: "\u5145\u503c",
+  editContent: "\u7f16\u8f91\u5185\u5bb9",
+  contentEditorTitle: "\u5185\u5bb9\u7f16\u8f91",
+  contentEditorSubtitle: "\u5728\u8fd9\u91cc\u4fee\u6539\u9875\u9762\u6838\u5fc3\u6587\u6848\uff0c\u4fdd\u5b58\u540e\u4ec5\u5728\u5f53\u524d\u6d4f\u89c8\u5668\u751f\u6548\u3002",
+  brandSubtitle: "\u54c1\u724c\u526f\u6807\u9898",
+  saveContent: "\u4fdd\u5b58\u5185\u5bb9",
+  resetContent: "\u6062\u590d\u9ed8\u8ba4",
+  contentSaved: "\u5df2\u4fdd\u5b58",
+  closeEditor: "\u5173\u95ed\u7f16\u8f91\u5668",
   linkCopied: "\u94fe\u63a5\u5df2\u590d\u5236",
   generating: "\u751f\u6210\u4e2d",
   copy: "\u590d\u5236",
@@ -149,6 +157,63 @@ const promptSchemes = [
 ] as const;
 
 type PromptSchemeId = (typeof promptSchemes)[number]["id"];
+
+const CONTENT_STORAGE_KEY = "studiorender_editable_content_v1";
+
+type EditableSchemeContent = {
+  name: string;
+  note: string;
+};
+
+type EditableContent = {
+  brandSubtitle: string;
+  generatedPrompt: string;
+  detailPlaceholder: string;
+  keywordPlaceholder: string;
+  englishPrompt: string;
+  chinesePrompt: string;
+  negativePrompt: string;
+  schemes: Record<PromptSchemeId, EditableSchemeContent>;
+};
+
+const defaultEditableContent: EditableContent = {
+  brandSubtitle: "\u5ba4\u5185\u6e32\u67d3\u63d0\u793a\u8bcd\u5de5\u4f5c\u53f0",
+  generatedPrompt: labels.generatedPrompt,
+  detailPlaceholder: labels.detailPlaceholder,
+  keywordPlaceholder: labels.keywordPlaceholder,
+  englishPrompt: labels.englishPrompt,
+  chinesePrompt: labels.chinesePrompt,
+  negativePrompt: labels.negativePrompt,
+  schemes: promptSchemes.reduce((accumulator, scheme) => {
+    accumulator[scheme.id] = {
+      name: scheme.name,
+      note: scheme.note,
+    };
+    return accumulator;
+  }, {} as Record<PromptSchemeId, EditableSchemeContent>),
+};
+
+function normalizeEditableContent(value: unknown): EditableContent {
+  const parsed = typeof value === "object" && value !== null ? (value as Partial<EditableContent>) : {};
+  const parsedSchemes =
+    typeof parsed.schemes === "object" && parsed.schemes !== null
+      ? (parsed.schemes as Partial<Record<PromptSchemeId, Partial<EditableSchemeContent>>>)
+      : {};
+  const schemes = promptSchemes.reduce((accumulator, scheme) => {
+    const savedScheme = parsedSchemes[scheme.id];
+    accumulator[scheme.id] = {
+      ...defaultEditableContent.schemes[scheme.id],
+      ...(savedScheme || {}),
+    };
+    return accumulator;
+  }, {} as Record<PromptSchemeId, EditableSchemeContent>);
+
+  return {
+    ...defaultEditableContent,
+    ...parsed,
+    schemes,
+  };
+}
 
 const translations: Record<string, string> = {
   "\u5ba2\u5385": "living room",
@@ -357,6 +422,9 @@ export default function Home() {
   const [isSavingKey, setIsSavingKey] = useState(false);
   const [keySaved, setKeySaved] = useState(false);
   const [showRecharge, setShowRecharge] = useState(false);
+  const [showContentEditor, setShowContentEditor] = useState(false);
+  const [editableContent, setEditableContent] = useState<EditableContent>(defaultEditableContent);
+  const [contentSaved, setContentSaved] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(rechargePlans[1]);
   const [customerId, setCustomerId] = useState("");
   const [orderCopied, setOrderCopied] = useState(false);
@@ -369,6 +437,16 @@ export default function Home() {
     const sharedState = decodeShareState(shareValue);
     if (sharedState) {
       setState(sharedState);
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      const savedContent = window.localStorage.getItem(CONTENT_STORAGE_KEY);
+      if (!savedContent) return;
+      setEditableContent(normalizeEditableContent(JSON.parse(savedContent)));
+    } catch {
+      setEditableContent(defaultEditableContent);
     }
   }, []);
 
@@ -614,13 +692,50 @@ export default function Home() {
 
   const showKeyBox = error.includes("OPENAI_API_KEY") || keySaved;
 
+  const getEditableScheme = (schemeId: PromptSchemeId) => editableContent.schemes[schemeId] ?? defaultEditableContent.schemes[schemeId];
+
+  const updateEditableContent = (patch: Partial<Omit<EditableContent, "schemes">>) => {
+    setEditableContent((current) => ({ ...current, ...patch }));
+    setContentSaved(false);
+  };
+
+  const updateEditableScheme = (schemeId: PromptSchemeId, patch: Partial<EditableSchemeContent>) => {
+    setEditableContent((current) => {
+      const currentScheme = current.schemes[schemeId] ?? defaultEditableContent.schemes[schemeId];
+
+      return {
+        ...current,
+        schemes: {
+          ...current.schemes,
+          [schemeId]: {
+            ...currentScheme,
+            ...patch,
+          },
+        },
+      };
+    });
+    setContentSaved(false);
+  };
+
+  const saveEditableContent = () => {
+    window.localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(editableContent));
+    setContentSaved(true);
+    window.setTimeout(() => setContentSaved(false), 1800);
+  };
+
+  const resetEditableContent = () => {
+    setEditableContent(defaultEditableContent);
+    window.localStorage.removeItem(CONTENT_STORAGE_KEY);
+    setContentSaved(false);
+  };
+
   return (
     <main className="shell">
       <div className="appFrame">
         <header className="topbar">
           <div className="brandBlock" aria-label="StudioRender">
             <strong>STUDIORENDER</strong>
-            <span>{"\u5ba4\u5185\u6e32\u67d3\u63d0\u793a\u8bcd\u5de5\u4f5c\u53f0"}</span>
+            <span>{editableContent.brandSubtitle}</span>
           </div>
           <div className="navActions">
             <button className="navIconButton" onClick={randomize} aria-label={labels.randomize} title={labels.randomize}>
@@ -637,6 +752,10 @@ export default function Home() {
               <Wallet size={18} />
               <span>{labels.recharge}</span>
             </button>
+            <button className="navButton" onClick={() => setShowContentEditor(true)}>
+              <Pencil size={18} />
+              <span>{labels.editContent}</span>
+            </button>
             <button className="navButton darkButton" onClick={copyPrompt}>
               <Copy size={18} />
               <span>{copied ? labels.copied : labels.copy}</span>
@@ -648,7 +767,7 @@ export default function Home() {
           <nav className="schemeGroup" aria-label={labels.scheme}>
             <div className="schemeTitle">
               <span>{labels.scheme}</span>
-              <strong>{getScheme(state.scheme).name}</strong>
+              <strong>{getEditableScheme(state.scheme).name}</strong>
             </div>
             <div className="schemeGrid">
               {promptSchemes.map((scheme) => (
@@ -661,8 +780,8 @@ export default function Home() {
                   }}
                 >
                   <span className="schemeDot" aria-hidden="true" />
-                  <strong>{scheme.name}</strong>
-                  <small>{scheme.note}</small>
+                  <strong>{getEditableScheme(scheme.id).name}</strong>
+                  <small>{getEditableScheme(scheme.id).note}</small>
                 </button>
               ))}
             </div>
@@ -778,7 +897,7 @@ export default function Home() {
               <textarea
                 value={state.detail}
                 onChange={(event) => updateState({ detail: event.target.value })}
-                placeholder={labels.detailPlaceholder}
+                placeholder={editableContent.detailPlaceholder}
               />
             </label>
 
@@ -788,7 +907,7 @@ export default function Home() {
                 className="keywordsInput"
                 value={state.keywords}
                 onChange={(event) => updateState({ keywords: event.target.value })}
-                placeholder={labels.keywordPlaceholder}
+                placeholder={editableContent.keywordPlaceholder}
               />
             </label>
           </form>
@@ -796,7 +915,7 @@ export default function Home() {
           <aside className="output">
             <div className="outputTop">
               <span className="eyebrow">Generated Prompt</span>
-              <h2>{labels.generatedPrompt}</h2>
+              <h2>{editableContent.generatedPrompt}</h2>
               {isSyncing ? <small className="syncText">{labels.syncing}</small> : null}
             </div>
             {error ? <p className="errorText">{error}</p> : null}
@@ -816,7 +935,7 @@ export default function Home() {
             <div className="promptPanels">
               <section className="promptPanel englishPanel">
                 <div className="promptPanelHeader">
-                  <span>{labels.englishPrompt}</span>
+                  <span>{editableContent.englishPrompt}</span>
                   <button className="miniAiButton" onClick={() => optimizePrompt("english")} disabled={isOptimizingEnglish}>
                     {isOptimizingEnglish ? <Loader2 className="spin" size={16} /> : <Sparkles size={16} />}
                     {isOptimizingEnglish ? labels.generating : labels.aiOptimizeEnglish}
@@ -835,7 +954,7 @@ export default function Home() {
 
               <section className="promptPanel chinesePanel">
                 <div className="promptPanelHeader">
-                  <span>{labels.chinesePrompt}</span>
+                  <span>{editableContent.chinesePrompt}</span>
                   <button className="miniAiButton lightMiniButton" onClick={() => optimizePrompt("chinese")} disabled={isOptimizingChinese}>
                     {isOptimizingChinese ? <Loader2 className="spin" size={16} /> : <Sparkles size={16} />}
                     {isOptimizingChinese ? labels.generating : labels.aiOptimizeChinese}
@@ -854,7 +973,7 @@ export default function Home() {
 
               <section className="promptPanel negativePanel">
                 <div className="promptPanelHeader">
-                  <span>{labels.negativePrompt}</span>
+                  <span>{editableContent.negativePrompt}</span>
                 </div>
                 <textarea
                   className="promptBox negativeBox"
@@ -866,6 +985,114 @@ export default function Home() {
           </aside>
         </section>
       </div>
+
+      {showContentEditor ? (
+        <aside className="contentEditorLayer" aria-label={labels.contentEditorTitle}>
+          <div className="contentEditorPanel">
+            <div className="contentEditorHeader">
+              <div>
+                <span className="eyebrow">Local Editor</span>
+                <h3>{labels.contentEditorTitle}</h3>
+                <p>{labels.contentEditorSubtitle}</p>
+              </div>
+              <button className="editorIconButton" onClick={() => setShowContentEditor(false)} aria-label={labels.closeEditor}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="editorActions">
+              <button className="editorActionButton editorSaveButton" onClick={saveEditableContent}>
+                <Save size={17} />
+                <span>{contentSaved ? labels.contentSaved : labels.saveContent}</span>
+              </button>
+              <button className="editorActionButton" onClick={resetEditableContent}>
+                <RotateCcw size={17} />
+                <span>{labels.resetContent}</span>
+              </button>
+            </div>
+
+            <div className="editorSection">
+              <label className="field editorField">
+                <span>{labels.brandSubtitle}</span>
+                <input
+                  value={editableContent.brandSubtitle}
+                  onChange={(event) => updateEditableContent({ brandSubtitle: event.target.value })}
+                />
+              </label>
+              <label className="field editorField">
+                <span>{labels.generatedPrompt}</span>
+                <input
+                  value={editableContent.generatedPrompt}
+                  onChange={(event) => updateEditableContent({ generatedPrompt: event.target.value })}
+                />
+              </label>
+              <label className="field editorField">
+                <span>{labels.englishPrompt}</span>
+                <input
+                  value={editableContent.englishPrompt}
+                  onChange={(event) => updateEditableContent({ englishPrompt: event.target.value })}
+                />
+              </label>
+              <label className="field editorField">
+                <span>{labels.chinesePrompt}</span>
+                <input
+                  value={editableContent.chinesePrompt}
+                  onChange={(event) => updateEditableContent({ chinesePrompt: event.target.value })}
+                />
+              </label>
+              <label className="field editorField">
+                <span>{labels.negativePrompt}</span>
+                <input
+                  value={editableContent.negativePrompt}
+                  onChange={(event) => updateEditableContent({ negativePrompt: event.target.value })}
+                />
+              </label>
+              <label className="field editorField">
+                <span>{labels.detail}</span>
+                <textarea
+                  value={editableContent.detailPlaceholder}
+                  onChange={(event) => updateEditableContent({ detailPlaceholder: event.target.value })}
+                />
+              </label>
+              <label className="field editorField">
+                <span>{labels.keywords}</span>
+                <textarea
+                  value={editableContent.keywordPlaceholder}
+                  onChange={(event) => updateEditableContent({ keywordPlaceholder: event.target.value })}
+                />
+              </label>
+            </div>
+
+            <div className="editorSection">
+              <div className="editorSectionTitle">
+                <span>{labels.scheme}</span>
+                <small>{promptSchemes.length} items</small>
+              </div>
+              {promptSchemes.map((scheme) => {
+                const schemeContent = getEditableScheme(scheme.id);
+                return (
+                  <div className="schemeEditorCard" key={scheme.id}>
+                    <label className="field editorField">
+                      <span>{scheme.id} / name</span>
+                      <input
+                        value={schemeContent.name}
+                        onChange={(event) => updateEditableScheme(scheme.id, { name: event.target.value })}
+                      />
+                    </label>
+                    <label className="field editorField">
+                      <span>{scheme.id} / note</span>
+                      <textarea
+                        value={schemeContent.note}
+                        onChange={(event) => updateEditableScheme(scheme.id, { note: event.target.value })}
+                      />
+                    </label>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </aside>
+      ) : null}
 
       {showRecharge ? (
         <div className="modalLayer" role="dialog" aria-modal="true" aria-labelledby="recharge-title">

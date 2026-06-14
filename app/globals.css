@@ -688,6 +688,141 @@ textarea::placeholder {
   color: #a1a1a6;
 }
 
+.contentEditorLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  display: flex;
+  justify-content: flex-end;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.contentEditorPanel {
+  width: min(440px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: var(--deep-shadow);
+  backdrop-filter: blur(26px) saturate(140%);
+  -webkit-backdrop-filter: blur(26px) saturate(140%);
+}
+
+.contentEditorHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+  margin-bottom: 16px;
+}
+
+.contentEditorHeader h3 {
+  margin: 6px 0 0;
+  font-size: 26px;
+  line-height: 1.16;
+  letter-spacing: 0;
+}
+
+.contentEditorHeader p {
+  margin: 8px 0 0;
+  color: rgba(29, 29, 31, 0.62);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.editorIconButton {
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.46);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.44);
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editorActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.editorActionButton {
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid rgba(29, 29, 31, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.46);
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.editorSaveButton {
+  border-color: rgba(0, 113, 227, 0.45);
+  background: rgba(0, 113, 227, 0.9);
+  color: white;
+}
+
+.editorSection {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.26);
+}
+
+.editorSection + .editorSection {
+  margin-top: 14px;
+}
+
+.editorSectionTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.editorSectionTitle span {
+  color: rgba(29, 29, 31, 0.68);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.editorSectionTitle small {
+  color: rgba(29, 29, 31, 0.48);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.editorField textarea {
+  min-height: 74px;
+}
+
+.schemeEditorCard {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.26);
+}
+
 .modalLayer {
   position: fixed;
   inset: 0;
@@ -934,6 +1069,10 @@ textarea::placeholder {
   .negativeBox {
     min-height: 150px;
   }
+
+  .contentEditorPanel {
+    width: min(520px, 100%);
+  }
 }
 
 @media (max-width: 560px) {
@@ -997,6 +1136,30 @@ textarea::placeholder {
   .promptPanelHeader {
     display: grid;
     align-items: start;
+  }
+
+  .contentEditorLayer {
+    align-items: flex-end;
+    padding: 10px;
+  }
+
+  .contentEditorPanel {
+    width: 100%;
+    max-height: calc(100vh - 20px);
+    padding: 18px;
+    border-radius: 24px;
+  }
+
+  .contentEditorHeader h3 {
+    font-size: 22px;
+  }
+
+  .editorActions {
+    grid-template-columns: 1fr;
+  }
+
+  .editorActionButton {
+    min-height: 44px;
   }
 
   .miniAiButton {
