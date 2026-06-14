@@ -645,26 +645,30 @@ export default function Home() {
         </header>
 
         <section className="workspace">
-          <form className="controls" aria-label="Prompt controls">
-            <fieldset className="group schemeGroup">
-              <legend>{labels.scheme}</legend>
-              <div className="schemeGrid">
-                {promptSchemes.map((scheme) => (
-                  <button
-                    className={state.scheme === scheme.id ? "schemeCard schemeCardActive" : "schemeCard"}
-                    key={scheme.id}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      updateState({ scheme: scheme.id });
-                    }}
-                  >
-                    <strong>{scheme.name}</strong>
-                    <span>{scheme.note}</span>
-                  </button>
-                ))}
-              </div>
-            </fieldset>
+          <nav className="schemeGroup" aria-label={labels.scheme}>
+            <div className="schemeTitle">
+              <span>{labels.scheme}</span>
+              <strong>{getScheme(state.scheme).name}</strong>
+            </div>
+            <div className="schemeGrid">
+              {promptSchemes.map((scheme) => (
+                <button
+                  className={state.scheme === scheme.id ? "schemeCard schemeCardActive" : "schemeCard"}
+                  key={scheme.id}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    updateState({ scheme: scheme.id });
+                  }}
+                >
+                  <span className="schemeDot" aria-hidden="true" />
+                  <strong>{scheme.name}</strong>
+                  <small>{scheme.note}</small>
+                </button>
+              ))}
+            </div>
+          </nav>
 
+          <form className="controls" aria-label="Prompt controls">
             <label className="field controlCard">
               <span>{labels.space}</span>
               <select value={state.space} onChange={(event) => updateState({ space: event.target.value })}>
