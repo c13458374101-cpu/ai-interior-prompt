@@ -693,8 +693,8 @@ export default function Home() {
               ))}
             </ControlGroup>
 
-            <fieldset className="group sliderGroup">
-              <legend>{labels.lighting}</legend>
+            <div className="group sliderGroup" role="group" aria-label={labels.lighting}>
+              <div className="groupLabel">{labels.lighting}</div>
               <div className="sliderLabels">
                 <span>{labels.lightingSoft}</span>
                 <span>{labels.lightingGolden}</span>
@@ -708,10 +708,10 @@ export default function Home() {
                 value={state.lighting}
                 onChange={(event) => updateState({ lighting: Number(event.target.value) })}
               />
-            </fieldset>
+            </div>
 
-            <fieldset className="group">
-              <legend>{labels.materials}</legend>
+            <div className="group" role="group" aria-label={labels.materials}>
+              <div className="groupLabel">{labels.materials}</div>
               <div className="checkGrid">
                 {materials.map((material) => (
                   <label className={state.materials.includes(material) ? "checkCard checkCardActive" : "checkCard"} key={material}>
@@ -720,10 +720,10 @@ export default function Home() {
                   </label>
                 ))}
               </div>
-            </fieldset>
+            </div>
 
-            <fieldset className="group">
-              <legend>{labels.engine}</legend>
+            <div className="group" role="group" aria-label={labels.engine}>
+              <div className="groupLabel">{labels.engine}</div>
               <div className="segmentControl">
                 {engines.map((engine) => (
                   <button
@@ -738,9 +738,9 @@ export default function Home() {
                   </button>
                 ))}
               </div>
-            </fieldset>
+            </div>
 
-            <label className="field">
+            <label className="field controlCard">
               <span>{labels.palette}</span>
               <select value={state.palette} onChange={(event) => updateState({ palette: event.target.value })}>
                 {palettes.map((palette) => (
@@ -749,7 +749,7 @@ export default function Home() {
               </select>
             </label>
 
-            <label className="field">
+            <label className="field controlCard">
               <span>{labels.budget}</span>
               <select value={state.budget} onChange={(event) => updateState({ budget: event.target.value })}>
                 {budgets.map((budget) => (
@@ -773,7 +773,7 @@ export default function Home() {
               ))}
             </ControlGroup>
 
-            <label className="field wide">
+            <label className="field controlCard wide">
               <span>{labels.detail}</span>
               <textarea
                 value={state.detail}
@@ -782,7 +782,7 @@ export default function Home() {
               />
             </label>
 
-            <label className="field wide">
+            <label className="field controlCard wide">
               <span>{labels.keywords}</span>
               <textarea
                 className="keywordsInput"
@@ -927,9 +927,9 @@ export default function Home() {
 
 function ControlGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <fieldset className="group">
-      <legend>{label}</legend>
+    <div className="group" role="group" aria-label={label}>
+      <div className="groupLabel">{label}</div>
       <div className="chips">{children}</div>
-    </fieldset>
+    </div>
   );
 }

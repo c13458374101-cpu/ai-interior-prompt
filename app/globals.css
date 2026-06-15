@@ -213,8 +213,10 @@ button {
 
 .controlCard {
   padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 20px;
-  background: var(--control);
+  background: rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
 .group {
@@ -325,18 +327,26 @@ button {
   box-shadow: 0 0 0 5px rgba(0, 113, 227, 0.13);
 }
 
-legend,
-.field span,
+.groupLabel,
+.field > span,
 .eyebrow {
-  margin-bottom: 12px;
-  color: rgba(29, 29, 31, 0.58);
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
+  color: rgba(29, 29, 31, 0.74);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
-legend {
-  padding: 0;
+.groupLabel {
+  margin: 0 0 14px;
+}
+
+.eyebrow {
+  color: rgba(29, 29, 31, 0.58);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .chips {
@@ -371,7 +381,7 @@ legend {
 
 .field {
   display: grid;
-  gap: 9px;
+  gap: 14px;
   min-width: 0;
 }
 
