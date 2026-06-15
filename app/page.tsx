@@ -86,9 +86,9 @@ const promptSchemes = [
     name: "SU\u7ebf\u7a3f\u6e32\u67d3",
     note: "\u8f6f\u88c5\u6307\u5357\u677f\u548c\u4ea7\u54c1\u76ee\u5f55\u6392\u7248",
     enGuide:
-      "Create a professional interior soft styling guide board, product catalog layout, and mood board. Use a clean white background with a grid system, display individual furniture pieces, material swatches, lamps, decor objects, rugs, tables, chairs, and storage items, then blend them into an elegant magazine-style presentation.",
+      "Convert interior design line drawings into realistic interior renderings, strictly preserving the original spatial layout, wall structure, door and window positions, and furniture placement. Use realistic materials and textures, natural daylight, high-quality lighting effects, global illumination, realistic shadows, high-end furniture staging, professional architectural visualization, ultra-high-definition 8K rendering, and photorealistic realism.",
     zhGuide:
-      "\u4e13\u4e1a\u5ba4\u5185\u8bbe\u8ba1\u8f6f\u88c5\u642d\u914d\u6307\u5357\u5c55\u793a\u677f\uff0c\u4ea7\u54c1\u76ee\u5f55\u6392\u7248\u548c\u60c5\u7eea\u677f\uff0c\u5728\u7eaf\u51c0\u767d\u5e95\u4e0a\u4ee5\u7f51\u683c\u5f62\u5f0f\u5c55\u793a\u5bb6\u5177\u5355\u54c1\u3001\u6750\u8d28\u8272\u5757\u3001\u706f\u5177\u3001\u88c5\u9970\u54c1\u548c\u8f6f\u88c5\u642d\u914d\u5173\u7cfb\u3002",
+      "\u5c06\u5ba4\u5185\u8bbe\u8ba1\u7ebf\u7a3f\u8f6c\u6362\u4e3a\u903c\u771f\u7684\u5ba4\u5185\u6548\u679c\u56fe\uff0c\u4e25\u683c\u4fdd\u7559\u539f\u59cb\u7a7a\u95f4\u5e03\u5c40\u3001\u5899\u4f53\u7ed3\u6784\u3001\u95e8\u7a97\u4f4d\u7f6e\u548c\u5bb6\u5177\u6446\u653e\u3002\u4f7f\u7528\u771f\u5b9e\u6750\u8d28\u4e0e\u7eb9\u7406\uff0c\u81ea\u7136\u91c7\u5149\uff0c\u9ad8\u54c1\u8d28\u706f\u5149\u6548\u679c\uff0c\u5168\u5c40\u5149\u7167\uff0c\u771f\u5b9e\u9634\u5f71\uff0c\u9ad8\u7aef\u5bb6\u5177\u9648\u8bbe\uff0c\u4e13\u4e1a\u5efa\u7b51\u53ef\u89c6\u5316\u8868\u73b0\uff0c\u8d85\u9ad8\u6e058K\u6e32\u67d3\uff0c\u7167\u7247\u7ea7\u771f\u5b9e\u611f\u3002",
     negativeZh:
       "\u5927\u7406\u77f3\u6ee5\u7528\uff0c\u5ec9\u4ef7\u6750\u8d28\uff0c\u8fc7\u5ea6\u66dd\u5149\uff0c\u6392\u7248\u6742\u4e71\uff0c\u7269\u4f53\u53d8\u5f62\uff0c\u4f4e\u5206\u8fa8\u7387\uff0c\u5361\u901a\u611f\uff0c\u63d2\u753b\u611f\uff0c\u989c\u8272\u8fc7\u9971\u548c\uff0c\u6587\u5b57\u4e71\u7801\u3002",
     negativeEn:
