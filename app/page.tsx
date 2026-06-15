@@ -158,122 +158,32 @@ const promptSchemes = [
 
 type PromptSchemeId = (typeof promptSchemes)[number]["id"];
 
-const PAGE_CONFIG_STORAGE_KEY = "studiorender_page_config_v1";
-const LEGACY_CONTENT_STORAGE_KEY = "studiorender_editable_content_v1";
+const CONTENT_STORAGE_KEY = "studiorender_editable_content_v1";
 
 type EditableSchemeContent = {
   name: string;
   note: string;
 };
 
-type EditableRechargePlanContent = {
-  name: string;
-  price: string;
-  credits: string;
-};
-
-type EditablePageConfig = {
+type EditableContent = {
   brandSubtitle: string;
-  outputEyebrow: string;
   generatedPrompt: string;
   detailPlaceholder: string;
   keywordPlaceholder: string;
-  promptPlaceholder: string;
   englishPrompt: string;
   chinesePrompt: string;
   negativePrompt: string;
-  randomize: string;
-  reset: string;
-  share: string;
-  linkCopied: string;
-  recharge: string;
-  editContent: string;
-  copy: string;
-  copied: string;
-  aiOptimizeEnglish: string;
-  aiOptimizeChinese: string;
-  generating: string;
-  syncing: string;
-  saveKey: string;
-  keySaved: string;
-  apiKeyLabel: string;
-  apiKeyPlaceholder: string;
-  contentEditorEyebrow: string;
-  contentEditorTitle: string;
-  contentEditorSubtitle: string;
-  saveContent: string;
-  resetContent: string;
-  contentSaved: string;
-  closeEditor: string;
-  schemeEditorCountLabel: string;
-  planEditorCountLabel: string;
-  errorLanguageSync: string;
-  errorPromptGeneration: string;
-  errorSaveApiKey: string;
-  rechargeTitle: string;
-  rechargeSubtitle: string;
-  manualPayTitle: string;
-  customerId: string;
-  paymentRemark: string;
-  alipay: string;
-  wechatPay: string;
-  copyOrder: string;
-  orderCopied: string;
-  manualPayNote: string;
   schemes: Record<PromptSchemeId, EditableSchemeContent>;
-  rechargePlans: EditableRechargePlanContent[];
 };
 
-type EditablePageConfigTextKey = keyof Omit<EditablePageConfig, "schemes" | "rechargePlans">;
-
-const defaultPageConfig: EditablePageConfig = {
+const defaultEditableContent: EditableContent = {
   brandSubtitle: "\u5ba4\u5185\u6e32\u67d3\u63d0\u793a\u8bcd\u5de5\u4f5c\u53f0",
-  outputEyebrow: "Generated Prompt",
   generatedPrompt: labels.generatedPrompt,
   detailPlaceholder: labels.detailPlaceholder,
   keywordPlaceholder: labels.keywordPlaceholder,
-  promptPlaceholder: labels.promptPlaceholder,
   englishPrompt: labels.englishPrompt,
   chinesePrompt: labels.chinesePrompt,
   negativePrompt: labels.negativePrompt,
-  randomize: labels.randomize,
-  reset: labels.reset,
-  share: labels.share,
-  linkCopied: labels.linkCopied,
-  recharge: labels.recharge,
-  editContent: labels.editContent,
-  copy: labels.copy,
-  copied: labels.copied,
-  aiOptimizeEnglish: labels.aiOptimizeEnglish,
-  aiOptimizeChinese: labels.aiOptimizeChinese,
-  generating: labels.generating,
-  syncing: labels.syncing,
-  saveKey: labels.saveKey,
-  keySaved: labels.keySaved,
-  apiKeyLabel: "OpenAI API Key",
-  apiKeyPlaceholder: "sk-...",
-  contentEditorEyebrow: "Local Editor",
-  contentEditorTitle: labels.contentEditorTitle,
-  contentEditorSubtitle: labels.contentEditorSubtitle,
-  saveContent: labels.saveContent,
-  resetContent: labels.resetContent,
-  contentSaved: labels.contentSaved,
-  closeEditor: labels.closeEditor,
-  schemeEditorCountLabel: "items",
-  planEditorCountLabel: "plans",
-  errorLanguageSync: "Language sync failed.",
-  errorPromptGeneration: "AI prompt generation failed.",
-  errorSaveApiKey: "Failed to save API key.",
-  rechargeTitle: labels.rechargeTitle,
-  rechargeSubtitle: labels.rechargeSubtitle,
-  manualPayTitle: labels.manualPayTitle,
-  customerId: labels.customerId,
-  paymentRemark: labels.paymentRemark,
-  alipay: labels.alipay,
-  wechatPay: labels.wechatPay,
-  copyOrder: labels.copyOrder,
-  orderCopied: labels.orderCopied,
-  manualPayNote: labels.manualPayNote,
   schemes: promptSchemes.reduce((accumulator, scheme) => {
     accumulator[scheme.id] = {
       name: scheme.name,
@@ -281,11 +191,10 @@ const defaultPageConfig: EditablePageConfig = {
     };
     return accumulator;
   }, {} as Record<PromptSchemeId, EditableSchemeContent>),
-  rechargePlans: rechargePlans.map((plan) => ({ ...plan })),
 };
 
-function normalizePageConfig(value: unknown): EditablePageConfig {
-  const parsed = typeof value === "object" && value !== null ? (value as Partial<EditablePageConfig>) : {};
+function normalizeEditableContent(value: unknown): EditableContent {
+  const parsed = typeof value === "object" && value !== null ? (value as Partial<EditableContent>) : {};
   const parsedSchemes =
     typeof parsed.schemes === "object" && parsed.schemes !== null
       ? (parsed.schemes as Partial<Record<PromptSchemeId, Partial<EditableSchemeContent>>>)
@@ -293,22 +202,16 @@ function normalizePageConfig(value: unknown): EditablePageConfig {
   const schemes = promptSchemes.reduce((accumulator, scheme) => {
     const savedScheme = parsedSchemes[scheme.id];
     accumulator[scheme.id] = {
-      ...defaultPageConfig.schemes[scheme.id],
+      ...defaultEditableContent.schemes[scheme.id],
       ...(savedScheme || {}),
     };
     return accumulator;
   }, {} as Record<PromptSchemeId, EditableSchemeContent>);
-  const parsedPlans = Array.isArray(parsed.rechargePlans) ? parsed.rechargePlans : [];
-  const plans = defaultPageConfig.rechargePlans.map((plan, index) => ({
-    ...plan,
-    ...(typeof parsedPlans[index] === "object" && parsedPlans[index] !== null ? parsedPlans[index] : {}),
-  }));
 
   return {
-    ...defaultPageConfig,
+    ...defaultEditableContent,
     ...parsed,
     schemes,
-    rechargePlans: plans,
   };
 }
 
@@ -520,9 +423,9 @@ export default function Home() {
   const [keySaved, setKeySaved] = useState(false);
   const [showRecharge, setShowRecharge] = useState(false);
   const [showContentEditor, setShowContentEditor] = useState(false);
-  const [pageConfig, setPageConfig] = useState<EditablePageConfig>(defaultPageConfig);
+  const [editableContent, setEditableContent] = useState<EditableContent>(defaultEditableContent);
   const [contentSaved, setContentSaved] = useState(false);
-  const [selectedPlanIndex, setSelectedPlanIndex] = useState(1);
+  const [selectedPlan, setSelectedPlan] = useState(rechargePlans[1]);
   const [customerId, setCustomerId] = useState("");
   const [orderCopied, setOrderCopied] = useState(false);
   const syncRequestId = useRef(0);
@@ -539,11 +442,11 @@ export default function Home() {
 
   useEffect(() => {
     try {
-      const savedConfig = window.localStorage.getItem(PAGE_CONFIG_STORAGE_KEY) || window.localStorage.getItem(LEGACY_CONTENT_STORAGE_KEY);
-      if (!savedConfig) return;
-      setPageConfig(normalizePageConfig(JSON.parse(savedConfig)));
+      const savedContent = window.localStorage.getItem(CONTENT_STORAGE_KEY);
+      if (!savedContent) return;
+      setEditableContent(normalizeEditableContent(JSON.parse(savedContent)));
     } catch {
-      setPageConfig(defaultPageConfig);
+      setEditableContent(defaultEditableContent);
     }
   }, []);
 
@@ -565,7 +468,6 @@ export default function Home() {
   const effectiveEnglishPrompt = state.englishPromptOverride || generatedEnglishPrompt;
   const effectiveChinesePrompt = state.chinesePromptOverride || generatedChinesePrompt;
   const effectiveNegativePrompt = state.negativePromptOverride || generatedNegativePrompt;
-  const selectedPlan = pageConfig.rechargePlans[selectedPlanIndex] ?? pageConfig.rechargePlans[0] ?? defaultPageConfig.rechargePlans[0];
 
   useEffect(() => {
     if (!lastEdited) return;
@@ -605,7 +507,7 @@ export default function Home() {
         setError("");
       } catch (caughtError) {
         if (syncRequestId.current === requestId) {
-          setError(caughtError instanceof Error ? caughtError.message : pageConfig.errorLanguageSync);
+          setError(caughtError instanceof Error ? caughtError.message : "Language sync failed.");
         }
       } finally {
         if (syncRequestId.current === requestId) {
@@ -746,7 +648,7 @@ export default function Home() {
       );
       setLastEdited(null);
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : pageConfig.errorPromptGeneration);
+      setError(caughtError instanceof Error ? caughtError.message : "AI prompt generation failed.");
     } finally {
       setLoading(false);
     }
@@ -770,7 +672,7 @@ export default function Home() {
       setApiKey("");
       setKeySaved(true);
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : pageConfig.errorSaveApiKey);
+      setError(caughtError instanceof Error ? caughtError.message : "Failed to save API key.");
     } finally {
       setIsSavingKey(false);
     }
@@ -778,8 +680,8 @@ export default function Home() {
 
   const copyRechargeInfo = async () => {
     const info = [
-      `${pageConfig.customerId}: ${customerId}`,
-      `${pageConfig.paymentRemark}: ${customerId} / ${selectedPlan.name} / ${selectedPlan.price}`,
+      `${labels.customerId}: ${customerId}`,
+      `${labels.paymentRemark}: ${customerId} / ${selectedPlan.name} / ${selectedPlan.price}`,
       `${selectedPlan.name}: ${selectedPlan.credits}`,
     ].join("\n");
 
@@ -790,20 +692,16 @@ export default function Home() {
 
   const showKeyBox = error.includes("OPENAI_API_KEY") || keySaved;
 
-  const getEditableScheme = (schemeId: PromptSchemeId) => pageConfig.schemes[schemeId] ?? defaultPageConfig.schemes[schemeId];
+  const getEditableScheme = (schemeId: PromptSchemeId) => editableContent.schemes[schemeId] ?? defaultEditableContent.schemes[schemeId];
 
-  const updatePageConfig = (patch: Partial<Omit<EditablePageConfig, "schemes" | "rechargePlans">>) => {
-    setPageConfig((current) => ({ ...current, ...patch }));
+  const updateEditableContent = (patch: Partial<Omit<EditableContent, "schemes">>) => {
+    setEditableContent((current) => ({ ...current, ...patch }));
     setContentSaved(false);
   };
 
-  const updatePageConfigField = (key: EditablePageConfigTextKey, value: string) => {
-    updatePageConfig({ [key]: value } as Partial<Omit<EditablePageConfig, "schemes" | "rechargePlans">>);
-  };
-
   const updateEditableScheme = (schemeId: PromptSchemeId, patch: Partial<EditableSchemeContent>) => {
-    setPageConfig((current) => {
-      const currentScheme = current.schemes[schemeId] ?? defaultPageConfig.schemes[schemeId];
+    setEditableContent((current) => {
+      const currentScheme = current.schemes[schemeId] ?? defaultEditableContent.schemes[schemeId];
 
       return {
         ...current,
@@ -819,26 +717,15 @@ export default function Home() {
     setContentSaved(false);
   };
 
-  const updateRechargePlan = (index: number, patch: Partial<EditableRechargePlanContent>) => {
-    setPageConfig((current) => ({
-      ...current,
-      rechargePlans: current.rechargePlans.map((plan, planIndex) => (planIndex === index ? { ...plan, ...patch } : plan)),
-    }));
-    setContentSaved(false);
-  };
-
   const saveEditableContent = () => {
-    window.localStorage.setItem(PAGE_CONFIG_STORAGE_KEY, JSON.stringify(pageConfig));
-    window.localStorage.removeItem(LEGACY_CONTENT_STORAGE_KEY);
+    window.localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(editableContent));
     setContentSaved(true);
     window.setTimeout(() => setContentSaved(false), 1800);
   };
 
   const resetEditableContent = () => {
-    setPageConfig(defaultPageConfig);
-    window.localStorage.removeItem(PAGE_CONFIG_STORAGE_KEY);
-    window.localStorage.removeItem(LEGACY_CONTENT_STORAGE_KEY);
-    setSelectedPlanIndex(1);
+    setEditableContent(defaultEditableContent);
+    window.localStorage.removeItem(CONTENT_STORAGE_KEY);
     setContentSaved(false);
   };
 
@@ -848,30 +735,30 @@ export default function Home() {
         <header className="topbar">
           <div className="brandBlock" aria-label="StudioRender">
             <strong>STUDIORENDER</strong>
-            <span>{pageConfig.brandSubtitle}</span>
+            <span>{editableContent.brandSubtitle}</span>
           </div>
           <div className="navActions">
-            <button className="navIconButton" onClick={randomize} aria-label={pageConfig.randomize} title={pageConfig.randomize}>
+            <button className="navIconButton" onClick={randomize} aria-label={labels.randomize} title={labels.randomize}>
               <Dice5 size={18} />
             </button>
-            <button className="navIconButton" onClick={() => updateState(initialState)} aria-label={pageConfig.reset} title={pageConfig.reset}>
+            <button className="navIconButton" onClick={() => updateState(initialState)} aria-label={labels.reset} title={labels.reset}>
               <RotateCcw size={18} />
             </button>
             <button className="navButton" onClick={shareDesign}>
               <Share2 size={18} />
-              <span>{shared ? pageConfig.linkCopied : pageConfig.share}</span>
+              <span>{shared ? labels.linkCopied : labels.share}</span>
             </button>
             <button className="navButton" onClick={() => setShowRecharge(true)}>
               <Wallet size={18} />
-              <span>{pageConfig.recharge}</span>
+              <span>{labels.recharge}</span>
             </button>
             <button className="navButton" onClick={() => setShowContentEditor(true)}>
               <Pencil size={18} />
-              <span>{pageConfig.editContent}</span>
+              <span>{labels.editContent}</span>
             </button>
             <button className="navButton darkButton" onClick={copyPrompt}>
               <Copy size={18} />
-              <span>{copied ? pageConfig.copied : pageConfig.copy}</span>
+              <span>{copied ? labels.copied : labels.copy}</span>
             </button>
           </div>
         </header>
@@ -1010,7 +897,7 @@ export default function Home() {
               <textarea
                 value={state.detail}
                 onChange={(event) => updateState({ detail: event.target.value })}
-                placeholder={pageConfig.detailPlaceholder}
+                placeholder={editableContent.detailPlaceholder}
               />
             </label>
 
@@ -1020,27 +907,27 @@ export default function Home() {
                 className="keywordsInput"
                 value={state.keywords}
                 onChange={(event) => updateState({ keywords: event.target.value })}
-                placeholder={pageConfig.keywordPlaceholder}
+                placeholder={editableContent.keywordPlaceholder}
               />
             </label>
           </form>
 
           <aside className="output">
             <div className="outputTop">
-              <span className="eyebrow">{pageConfig.outputEyebrow}</span>
-              <h2>{pageConfig.generatedPrompt}</h2>
-              {isSyncing ? <small className="syncText">{pageConfig.syncing}</small> : null}
+              <span className="eyebrow">Generated Prompt</span>
+              <h2>{editableContent.generatedPrompt}</h2>
+              {isSyncing ? <small className="syncText">{labels.syncing}</small> : null}
             </div>
             {error ? <p className="errorText">{error}</p> : null}
             {showKeyBox ? (
               <div className="keyBox">
                 <label className="field">
-                  <span>{pageConfig.apiKeyLabel}</span>
-                  <input value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder={pageConfig.apiKeyPlaceholder} type="password" />
+                  <span>OpenAI API Key</span>
+                  <input value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder="sk-..." type="password" />
                 </label>
                 <button className="saveKeyButton" onClick={saveApiKey} disabled={isSavingKey || apiKey.length < 20}>
                   {isSavingKey ? <Loader2 className="spin" size={18} /> : <Sparkles size={18} />}
-                  {keySaved ? pageConfig.keySaved : pageConfig.saveKey}
+                  {keySaved ? labels.keySaved : labels.saveKey}
                 </button>
               </div>
             ) : null}
@@ -1048,10 +935,10 @@ export default function Home() {
             <div className="promptPanels">
               <section className="promptPanel englishPanel">
                 <div className="promptPanelHeader">
-                  <span>{pageConfig.englishPrompt}</span>
+                  <span>{editableContent.englishPrompt}</span>
                   <button className="miniAiButton" onClick={() => optimizePrompt("english")} disabled={isOptimizingEnglish}>
                     {isOptimizingEnglish ? <Loader2 className="spin" size={16} /> : <Sparkles size={16} />}
-                    {isOptimizingEnglish ? pageConfig.generating : pageConfig.aiOptimizeEnglish}
+                    {isOptimizingEnglish ? labels.generating : labels.aiOptimizeEnglish}
                   </button>
                 </div>
                 <textarea
@@ -1061,16 +948,16 @@ export default function Home() {
                     updateState({ englishPromptOverride: event.target.value }, true);
                     setLastEdited("english");
                   }}
-                  placeholder={pageConfig.promptPlaceholder}
+                  placeholder={labels.promptPlaceholder}
                 />
               </section>
 
               <section className="promptPanel chinesePanel">
                 <div className="promptPanelHeader">
-                  <span>{pageConfig.chinesePrompt}</span>
+                  <span>{editableContent.chinesePrompt}</span>
                   <button className="miniAiButton lightMiniButton" onClick={() => optimizePrompt("chinese")} disabled={isOptimizingChinese}>
                     {isOptimizingChinese ? <Loader2 className="spin" size={16} /> : <Sparkles size={16} />}
-                    {isOptimizingChinese ? pageConfig.generating : pageConfig.aiOptimizeChinese}
+                    {isOptimizingChinese ? labels.generating : labels.aiOptimizeChinese}
                   </button>
                 </div>
                 <textarea
@@ -1080,13 +967,13 @@ export default function Home() {
                     updateState({ chinesePromptOverride: event.target.value }, true);
                     setLastEdited("chinese");
                   }}
-                  placeholder={pageConfig.promptPlaceholder}
+                  placeholder={labels.promptPlaceholder}
                 />
               </section>
 
               <section className="promptPanel negativePanel">
                 <div className="promptPanelHeader">
-                  <span>{pageConfig.negativePrompt}</span>
+                  <span>{editableContent.negativePrompt}</span>
                 </div>
                 <textarea
                   className="promptBox negativeBox"
@@ -1100,15 +987,15 @@ export default function Home() {
       </div>
 
       {showContentEditor ? (
-        <aside className="contentEditorLayer" aria-label={pageConfig.contentEditorTitle}>
+        <aside className="contentEditorLayer" aria-label={labels.contentEditorTitle}>
           <div className="contentEditorPanel">
             <div className="contentEditorHeader">
               <div>
-                <span className="eyebrow">{pageConfig.contentEditorEyebrow}</span>
-                <h3>{pageConfig.contentEditorTitle}</h3>
-                <p>{pageConfig.contentEditorSubtitle}</p>
+                <span className="eyebrow">Local Editor</span>
+                <h3>{labels.contentEditorTitle}</h3>
+                <p>{labels.contentEditorSubtitle}</p>
               </div>
-              <button className="editorIconButton" onClick={() => setShowContentEditor(false)} aria-label={pageConfig.closeEditor}>
+              <button className="editorIconButton" onClick={() => setShowContentEditor(false)} aria-label={labels.closeEditor}>
                 <X size={20} />
               </button>
             </div>
@@ -1116,129 +1003,71 @@ export default function Home() {
             <div className="editorActions">
               <button className="editorActionButton editorSaveButton" onClick={saveEditableContent}>
                 <Save size={17} />
-                <span>{contentSaved ? pageConfig.contentSaved : pageConfig.saveContent}</span>
+                <span>{contentSaved ? labels.contentSaved : labels.saveContent}</span>
               </button>
               <button className="editorActionButton" onClick={resetEditableContent}>
                 <RotateCcw size={17} />
-                <span>{pageConfig.resetContent}</span>
+                <span>{labels.resetContent}</span>
               </button>
             </div>
 
             <div className="editorSection">
-              <div className="editorSectionTitle">
-                <span>Page copy</span>
-              </div>
               <label className="field editorField">
                 <span>{labels.brandSubtitle}</span>
                 <input
-                  value={pageConfig.brandSubtitle}
-                  onChange={(event) => updatePageConfig({ brandSubtitle: event.target.value })}
+                  value={editableContent.brandSubtitle}
+                  onChange={(event) => updateEditableContent({ brandSubtitle: event.target.value })}
                 />
-              </label>
-              <label className="field editorField">
-                <span>输出区小标题</span>
-                <input value={pageConfig.outputEyebrow} onChange={(event) => updatePageConfig({ outputEyebrow: event.target.value })} />
               </label>
               <label className="field editorField">
                 <span>{labels.generatedPrompt}</span>
                 <input
-                  value={pageConfig.generatedPrompt}
-                  onChange={(event) => updatePageConfig({ generatedPrompt: event.target.value })}
+                  value={editableContent.generatedPrompt}
+                  onChange={(event) => updateEditableContent({ generatedPrompt: event.target.value })}
                 />
               </label>
               <label className="field editorField">
                 <span>{labels.englishPrompt}</span>
                 <input
-                  value={pageConfig.englishPrompt}
-                  onChange={(event) => updatePageConfig({ englishPrompt: event.target.value })}
+                  value={editableContent.englishPrompt}
+                  onChange={(event) => updateEditableContent({ englishPrompt: event.target.value })}
                 />
               </label>
               <label className="field editorField">
                 <span>{labels.chinesePrompt}</span>
                 <input
-                  value={pageConfig.chinesePrompt}
-                  onChange={(event) => updatePageConfig({ chinesePrompt: event.target.value })}
+                  value={editableContent.chinesePrompt}
+                  onChange={(event) => updateEditableContent({ chinesePrompt: event.target.value })}
                 />
               </label>
               <label className="field editorField">
                 <span>{labels.negativePrompt}</span>
                 <input
-                  value={pageConfig.negativePrompt}
-                  onChange={(event) => updatePageConfig({ negativePrompt: event.target.value })}
+                  value={editableContent.negativePrompt}
+                  onChange={(event) => updateEditableContent({ negativePrompt: event.target.value })}
                 />
-              </label>
-              <label className="field editorField">
-                <span>提示词空状态</span>
-                <textarea value={pageConfig.promptPlaceholder} onChange={(event) => updatePageConfig({ promptPlaceholder: event.target.value })} />
               </label>
               <label className="field editorField">
                 <span>{labels.detail}</span>
                 <textarea
-                  value={pageConfig.detailPlaceholder}
-                  onChange={(event) => updatePageConfig({ detailPlaceholder: event.target.value })}
+                  value={editableContent.detailPlaceholder}
+                  onChange={(event) => updateEditableContent({ detailPlaceholder: event.target.value })}
                 />
               </label>
               <label className="field editorField">
                 <span>{labels.keywords}</span>
                 <textarea
-                  value={pageConfig.keywordPlaceholder}
-                  onChange={(event) => updatePageConfig({ keywordPlaceholder: event.target.value })}
+                  value={editableContent.keywordPlaceholder}
+                  onChange={(event) => updateEditableContent({ keywordPlaceholder: event.target.value })}
                 />
               </label>
             </div>
 
             <div className="editorSection">
               <div className="editorSectionTitle">
-                <span>Buttons and status</span>
-              </div>
-              {(
-                [
-                  ["randomize", "随机按钮提示"],
-                  ["reset", "重置按钮提示"],
-                  ["share", "分享按钮"],
-                  ["linkCopied", "分享成功"],
-                  ["recharge", "充值按钮"],
-                  ["editContent", "编辑按钮"],
-                  ["copy", "复制按钮"],
-                  ["copied", "复制成功"],
-                  ["aiOptimizeEnglish", "AI 优化英文"],
-                  ["aiOptimizeChinese", "AI 优化中文"],
-                  ["generating", "生成中"],
-                  ["syncing", "同步中"],
-                  ["saveKey", "保存 Key"],
-                  ["keySaved", "Key 保存成功"],
-                  ["apiKeyLabel", "API Key 标题"],
-                  ["apiKeyPlaceholder", "API Key 占位"],
-                  ["contentEditorEyebrow", "编辑器小标题"],
-                  ["contentEditorTitle", "编辑器标题"],
-                  ["contentEditorSubtitle", "编辑器说明"],
-                  ["saveContent", "保存按钮"],
-                  ["resetContent", "重置配置按钮"],
-                  ["contentSaved", "配置保存成功"],
-                  ["closeEditor", "关闭按钮说明"],
-                  ["errorLanguageSync", "同步错误提示"],
-                  ["errorPromptGeneration", "AI 错误提示"],
-                  ["errorSaveApiKey", "Key 保存错误提示"],
-                ] as const
-              ).map(([key, label]) => (
-                <label className="field editorField" key={key}>
-                  <span>{label}</span>
-                  <input value={pageConfig[key]} onChange={(event) => updatePageConfigField(key, event.target.value)} />
-                </label>
-              ))}
-            </div>
-
-            <div className="editorSection">
-              <div className="editorSectionTitle">
                 <span>{labels.scheme}</span>
-                <small>
-                  {promptSchemes.length} {pageConfig.schemeEditorCountLabel}
-                </small>
+                <small>{promptSchemes.length} items</small>
               </div>
-              <label className="field editorField">
-                <span>方案计数单位</span>
-                <input value={pageConfig.schemeEditorCountLabel} onChange={(event) => updatePageConfig({ schemeEditorCountLabel: event.target.value })} />
-              </label>
               {promptSchemes.map((scheme) => {
                 const schemeContent = getEditableScheme(scheme.id);
                 return (
@@ -1261,64 +1090,6 @@ export default function Home() {
                 );
               })}
             </div>
-
-            <div className="editorSection">
-              <div className="editorSectionTitle">
-                <span>Recharge modal</span>
-              </div>
-              {(
-                [
-                  ["rechargeTitle", "充值标题"],
-                  ["rechargeSubtitle", "充值说明"],
-                  ["manualPayTitle", "扫码支付标题"],
-                  ["customerId", "客户编号"],
-                  ["paymentRemark", "付款备注"],
-                  ["alipay", "支付宝标题"],
-                  ["wechatPay", "微信支付标题"],
-                  ["copyOrder", "复制充值信息"],
-                  ["orderCopied", "充值信息已复制"],
-                  ["manualPayNote", "支付说明"],
-                ] as const
-              ).map(([key, label]) => (
-                <label className="field editorField" key={key}>
-                  <span>{label}</span>
-                  {key === "rechargeSubtitle" || key === "manualPayNote" ? (
-                    <textarea value={pageConfig[key]} onChange={(event) => updatePageConfigField(key, event.target.value)} />
-                  ) : (
-                    <input value={pageConfig[key]} onChange={(event) => updatePageConfigField(key, event.target.value)} />
-                  )}
-                </label>
-              ))}
-            </div>
-
-            <div className="editorSection">
-              <div className="editorSectionTitle">
-                <span>Recharge plans</span>
-                <small>
-                  {pageConfig.rechargePlans.length} {pageConfig.planEditorCountLabel}
-                </small>
-              </div>
-              <label className="field editorField">
-                <span>套餐计数单位</span>
-                <input value={pageConfig.planEditorCountLabel} onChange={(event) => updatePageConfig({ planEditorCountLabel: event.target.value })} />
-              </label>
-              {pageConfig.rechargePlans.map((plan, index) => (
-                <div className="schemeEditorCard" key={index}>
-                  <label className="field editorField">
-                    <span>plan {index + 1} / name</span>
-                    <input value={plan.name} onChange={(event) => updateRechargePlan(index, { name: event.target.value })} />
-                  </label>
-                  <label className="field editorField">
-                    <span>plan {index + 1} / price</span>
-                    <input value={plan.price} onChange={(event) => updateRechargePlan(index, { price: event.target.value })} />
-                  </label>
-                  <label className="field editorField">
-                    <span>plan {index + 1} / credits</span>
-                    <input value={plan.credits} onChange={(event) => updateRechargePlan(index, { credits: event.target.value })} />
-                  </label>
-                </div>
-              ))}
-            </div>
           </div>
         </aside>
       ) : null}
@@ -1332,13 +1103,13 @@ export default function Home() {
             <div className="modalHeader">
               <Wallet size={24} />
               <div>
-                <h3 id="recharge-title">{pageConfig.rechargeTitle}</h3>
-                <p>{pageConfig.rechargeSubtitle}</p>
+                <h3 id="recharge-title">{labels.rechargeTitle}</h3>
+                <p>{labels.rechargeSubtitle}</p>
               </div>
             </div>
             <div className="plans">
-              {pageConfig.rechargePlans.map((plan, index) => (
-                <button className={selectedPlanIndex === index ? "planCard planCardActive" : "planCard"} key={`${index}-${plan.name}`} onClick={() => setSelectedPlanIndex(index)}>
+              {rechargePlans.map((plan) => (
+                <button className={selectedPlan.name === plan.name ? "planCard planCardActive" : "planCard"} key={plan.name} onClick={() => setSelectedPlan(plan)}>
                   <span>{plan.name}</span>
                   <strong>{plan.price}</strong>
                   <small>{plan.credits}</small>
@@ -1346,33 +1117,33 @@ export default function Home() {
               ))}
             </div>
             <div className="manualPayBox">
-              <h4>{pageConfig.manualPayTitle}</h4>
+              <h4>{labels.manualPayTitle}</h4>
               <div className="qrGrid">
                 <figure className="qrCard">
-                  <img src="/images/alipay-qr.jpg" alt={pageConfig.alipay} />
-                  <figcaption>{pageConfig.alipay}</figcaption>
+                  <img src="/images/alipay-qr.jpg" alt={labels.alipay} />
+                  <figcaption>{labels.alipay}</figcaption>
                 </figure>
                 <figure className="qrCard">
-                  <img src="/images/wechat-pay-qr.jpg" alt={pageConfig.wechatPay} />
-                  <figcaption>{pageConfig.wechatPay}</figcaption>
+                  <img src="/images/wechat-pay-qr.jpg" alt={labels.wechatPay} />
+                  <figcaption>{labels.wechatPay}</figcaption>
                 </figure>
               </div>
               <dl>
                 <div>
-                  <dt>{pageConfig.customerId}</dt>
+                  <dt>{labels.customerId}</dt>
                   <dd>{customerId}</dd>
                 </div>
                 <div>
-                  <dt>{pageConfig.paymentRemark}</dt>
+                  <dt>{labels.paymentRemark}</dt>
                   <dd>
                     {customerId} / {selectedPlan.name} / {selectedPlan.price}
                   </dd>
                 </div>
               </dl>
-              <p>{pageConfig.manualPayNote}</p>
+              <p>{labels.manualPayNote}</p>
             </div>
             <button className="payButton" onClick={copyRechargeInfo}>
-              {orderCopied ? pageConfig.orderCopied : pageConfig.copyOrder}
+              {orderCopied ? labels.orderCopied : labels.copyOrder}
             </button>
           </div>
         </div>
