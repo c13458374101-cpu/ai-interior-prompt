@@ -637,6 +637,14 @@ h2 {
   text-transform: uppercase;
 }
 
+.promptHeaderActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .miniAiButton {
   min-height: 34px;
   padding: 0 12px;
@@ -655,6 +663,11 @@ h2 {
 
 .lightMiniButton {
   border-color: rgba(29, 29, 31, 0.76);
+  background: rgba(29, 29, 31, 0.88);
+}
+
+.copyMiniButton {
+  border-color: rgba(29, 29, 31, 0.72);
   background: rgba(29, 29, 31, 0.88);
 }
 

@@ -36,6 +36,8 @@ const labels = {
   linkCopied: "\u94fe\u63a5\u5df2\u590d\u5236",
   generating: "\u751f\u6210\u4e2d",
   copy: "\u590d\u5236",
+  copyEnglish: "\u590d\u5236\u82f1\u6587",
+  copyChinese: "\u590d\u5236\u4e2d\u6587",
   copied: "\u5df2\u590d\u5236",
   saveKey: "\u4fdd\u5b58 Key",
   keySaved: "\u5df2\u4fdd\u5b58\uff0c\u53ef\u518d\u6b21\u4f18\u5316",
@@ -383,7 +385,7 @@ function buildNegativePrompt(state: PromptState) {
 
 export default function Home() {
   const [state, setState] = useState<PromptState>(initialState);
-  const [copied, setCopied] = useState(false);
+  const [copiedPrompt, setCopiedPrompt] = useState<"english" | "chinese" | null>(null);
   const [shared, setShared] = useState(false);
   const [lastEdited, setLastEdited] = useState<"english" | "chinese" | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -571,27 +573,16 @@ export default function Home() {
       engine: pick(engines),
       camera: pick(cameras),
     });
-    setCopied(false);
+    setCopiedPrompt(null);
     setShared(false);
     setLastEdited(null);
     setError("");
   };
 
-  const copyPrompt = async () => {
-    const copyText = [
-      "English Prompt:",
-      effectiveEnglishPrompt,
-      "",
-      "\u4e2d\u6587\u63d0\u793a\u8bcd:",
-      effectiveChinesePrompt,
-      "",
-      "Negative Prompt / \u53cd\u5411\u63d0\u793a\u8bcd:",
-      effectiveNegativePrompt,
-    ].join("\n");
-
-    await navigator.clipboard.writeText(copyText);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1800);
+  const copyPromptSection = async (targetLanguage: "english" | "chinese") => {
+    await navigator.clipboard.writeText(targetLanguage === "english" ? effectiveEnglishPrompt : effectiveChinesePrompt);
+    setCopiedPrompt(targetLanguage);
+    window.setTimeout(() => setCopiedPrompt(null), 1800);
   };
 
   const shareDesign = async () => {
@@ -607,7 +598,7 @@ export default function Home() {
     const setLoading = targetLanguage === "english" ? setIsOptimizingEnglish : setIsOptimizingChinese;
     setLoading(true);
     setError("");
-    setCopied(false);
+    setCopiedPrompt(null);
 
     try {
       const response = await fetch("/api/generate-prompt", {
@@ -715,10 +706,6 @@ export default function Home() {
             <button className="navButton" onClick={() => setShowRecharge(true)}>
               <Wallet size={18} />
               <span>{labels.recharge}</span>
-            </button>
-            <button className="navButton darkButton" onClick={copyPrompt}>
-              <Copy size={18} />
-              <span>{copied ? labels.copied : labels.copy}</span>
             </button>
           </div>
         </header>
@@ -896,10 +883,16 @@ export default function Home() {
               <section className="promptPanel englishPanel">
                 <div className="promptPanelHeader">
                   <span>{labels.englishPrompt}</span>
-                  <button className="miniAiButton" onClick={() => optimizePrompt("english")} disabled={isOptimizingEnglish}>
-                    {isOptimizingEnglish ? <Loader2 className="spin" size={16} /> : <Sparkles size={16} />}
-                    {isOptimizingEnglish ? labels.generating : labels.aiOptimizeEnglish}
-                  </button>
+                  <div className="promptHeaderActions">
+                    <button className="miniAiButton" onClick={() => optimizePrompt("english")} disabled={isOptimizingEnglish}>
+                      {isOptimizingEnglish ? <Loader2 className="spin" size={16} /> : <Sparkles size={16} />}
+                      {isOptimizingEnglish ? labels.generating : labels.aiOptimizeEnglish}
+                    </button>
+                    <button className="miniAiButton copyMiniButton" onClick={() => copyPromptSection("english")}>
+                      <Copy size={16} />
+                      {copiedPrompt === "english" ? labels.copied : labels.copyEnglish}
+                    </button>
+                  </div>
                 </div>
                 <textarea
                   className="promptBox promptBoxLarge"
@@ -915,10 +908,16 @@ export default function Home() {
               <section className="promptPanel chinesePanel">
                 <div className="promptPanelHeader">
                   <span>{labels.chinesePrompt}</span>
-                  <button className="miniAiButton lightMiniButton" onClick={() => optimizePrompt("chinese")} disabled={isOptimizingChinese}>
-                    {isOptimizingChinese ? <Loader2 className="spin" size={16} /> : <Sparkles size={16} />}
-                    {isOptimizingChinese ? labels.generating : labels.aiOptimizeChinese}
-                  </button>
+                  <div className="promptHeaderActions">
+                    <button className="miniAiButton lightMiniButton" onClick={() => optimizePrompt("chinese")} disabled={isOptimizingChinese}>
+                      {isOptimizingChinese ? <Loader2 className="spin" size={16} /> : <Sparkles size={16} />}
+                      {isOptimizingChinese ? labels.generating : labels.aiOptimizeChinese}
+                    </button>
+                    <button className="miniAiButton copyMiniButton" onClick={() => copyPromptSection("chinese")}>
+                      <Copy size={16} />
+                      {copiedPrompt === "chinese" ? labels.copied : labels.copyChinese}
+                    </button>
+                  </div>
                 </div>
                 <textarea
                   className="promptBox promptBoxSmall"
