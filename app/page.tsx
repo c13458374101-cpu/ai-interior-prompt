@@ -207,6 +207,13 @@ type PromptState = {
   negativePromptOverride: string;
 };
 
+type LocalTranslationState = {
+  detailSource: string;
+  detailEnglish: string;
+  keywordsSource: string;
+  keywordsEnglish: string;
+};
+
 const initialState: PromptState = {
   scheme: "raw-shell",
   space: "\u5ba2\u5385",
@@ -223,6 +230,13 @@ const initialState: PromptState = {
   englishPromptOverride: "",
   chinesePromptOverride: "",
   negativePromptOverride: "",
+};
+
+const emptyLocalTranslation: LocalTranslationState = {
+  detailSource: "",
+  detailEnglish: "",
+  keywordsSource: "",
+  keywordsEnglish: "",
 };
 
 function pick<T>(items: readonly T[]) {
@@ -254,6 +268,25 @@ function translateList(value: string) {
     .filter(Boolean)
     .map((item) => translate(item))
     .join(", ");
+}
+
+function containsChinese(value: string) {
+  return /[\u3400-\u9fff]/.test(value);
+}
+
+async function requestLocalTranslation(text: string) {
+  const response = await fetch("/api/local-translate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text, source: "zh", target: "en" }),
+  });
+
+  const data = (await response.json()) as { translatedText?: string; error?: string };
+  if (!response.ok || typeof data.translatedText !== "string") {
+    throw new Error(data.error || "Local translation failed.");
+  }
+
+  return data.translatedText.trim();
 }
 
 function zhList(value: string) {
@@ -303,11 +336,15 @@ function decodeShareState(value: string): PromptState | null {
   }
 }
 
-function buildEnglishPrompt(state: PromptState) {
+function buildEnglishPrompt(state: PromptState, localTranslation: LocalTranslationState = emptyLocalTranslation) {
   const scheme = getScheme(state.scheme);
   const selectedMaterials = state.materials.length > 0 ? state.materials : initialState.materials;
-  const userDetail = state.detail.trim() ? `User key details: ${translateList(state.detail)}.` : "User key details: not specified; infer only from selected design parameters.";
-  const userKeywords = state.keywords.trim() ? `User keywords: ${translateList(state.keywords)}.` : "User keywords: not specified.";
+  const translatedDetail = localTranslation.detailSource === state.detail ? localTranslation.detailEnglish.trim() : "";
+  const translatedKeywords = localTranslation.keywordsSource === state.keywords ? localTranslation.keywordsEnglish.trim() : "";
+  const englishDetail = translatedDetail || translateList(state.detail);
+  const englishKeywords = translatedKeywords || translateList(state.keywords);
+  const userDetail = state.detail.trim() ? `User key details: ${englishDetail}.` : "User key details: not specified; infer only from selected design parameters.";
+  const userKeywords = state.keywords.trim() ? `User keywords: ${englishKeywords}.` : "User keywords: not specified.";
 
   return [
     `${scheme.enGuide}`,
@@ -360,7 +397,9 @@ export default function Home() {
   const [selectedPlan, setSelectedPlan] = useState(rechargePlans[1]);
   const [customerId, setCustomerId] = useState("");
   const [orderCopied, setOrderCopied] = useState(false);
+  const [localTranslation, setLocalTranslation] = useState<LocalTranslationState>(emptyLocalTranslation);
   const syncRequestId = useRef(0);
+  const localTranslationRequestId = useRef(0);
 
   useEffect(() => {
     const shareValue = new URLSearchParams(window.location.search).get("design");
@@ -384,12 +423,52 @@ export default function Home() {
     setCustomerId(created);
   }, []);
 
-  const generatedEnglishPrompt = useMemo(() => buildEnglishPrompt(state), [state]);
+  const generatedEnglishPrompt = useMemo(() => buildEnglishPrompt(state, localTranslation), [state, localTranslation]);
   const generatedChinesePrompt = useMemo(() => buildChinesePrompt(state), [state]);
   const generatedNegativePrompt = useMemo(() => buildNegativePrompt(state), [state]);
   const effectiveEnglishPrompt = state.englishPromptOverride || generatedEnglishPrompt;
   const effectiveChinesePrompt = state.chinesePromptOverride || generatedChinesePrompt;
   const effectiveNegativePrompt = state.negativePromptOverride || generatedNegativePrompt;
+
+  useEffect(() => {
+    const detail = state.detail.trim();
+    const keywords = state.keywords.trim();
+    const shouldTranslateDetail = Boolean(detail && containsChinese(detail));
+    const shouldTranslateKeywords = Boolean(keywords && containsChinese(keywords));
+
+    const requestId = localTranslationRequestId.current + 1;
+    localTranslationRequestId.current = requestId;
+
+    if (!shouldTranslateDetail && !shouldTranslateKeywords) {
+      setLocalTranslation(emptyLocalTranslation);
+      return;
+    }
+
+    const timeout = window.setTimeout(async () => {
+      try {
+        const [detailEnglish, keywordsEnglish] = await Promise.all([
+          shouldTranslateDetail ? requestLocalTranslation(detail) : Promise.resolve(""),
+          shouldTranslateKeywords ? requestLocalTranslation(keywords) : Promise.resolve(""),
+        ]);
+
+        if (localTranslationRequestId.current !== requestId) return;
+
+        setLocalTranslation({
+          detailSource: state.detail,
+          detailEnglish,
+          keywordsSource: state.keywords,
+          keywordsEnglish,
+        });
+      } catch {
+        if (localTranslationRequestId.current !== requestId) return;
+
+        setLocalTranslation(emptyLocalTranslation);
+        setError("\u672c\u5730\u7ffb\u8bd1\u670d\u52a1\u6682\u4e0d\u53ef\u7528\uff0c\u82f1\u6587\u63d0\u793a\u8bcd\u5df2\u4f7f\u7528\u672c\u5730\u8bcd\u5178\u5907\u7528\u903b\u8f91\u3002");
+      }
+    }, 800);
+
+    return () => window.clearTimeout(timeout);
+  }, [state.detail, state.keywords]);
 
   useEffect(() => {
     if (!lastEdited) return;
