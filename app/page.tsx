@@ -71,19 +71,6 @@ const rechargePlans = [
 
 const promptSchemes = [
   {
-    id: "raw-shell",
-    name: "\u6bdb\u576f\u751f\u56fe",
-    note: "\u4fdd\u7559\u7a7a\u95f4\u7ed3\u6784\u5e76\u751f\u6210\u5b9e\u666f\u6548\u679c",
-    enGuide:
-      "Preserve the reference space structure and camera angle, keep original wall positions, ceiling beams, spatial perspective, floor level changes, side platforms, seating zones, and overall composition unchanged. Transform the rough space into a refined interior scene with coherent spatial hierarchy and realistic construction logic.",
-    zhGuide:
-      "\u53c2\u8003\u56fe\u7684\u7a7a\u95f4\u7ed3\u6784\u548c\u62cd\u6444\u89d2\u5ea6\uff0c\u4fdd\u6301\u539f\u59cb\u5899\u4f53\u4f4d\u7f6e\u3001\u9876\u9762\u6881\u4f53\u3001\u7a7a\u95f4\u900f\u89c6\u3001\u5730\u9762\u9ad8\u4f4e\u5dee\u3001\u5e73\u53f0\u3001\u5361\u5ea7\u533a\u57df\u548c\u6574\u4f53\u6784\u56fe\u4e0d\u53d8\uff0c\u5c06\u6bdb\u576f\u7a7a\u95f4\u6539\u9020\u6210\u9ad8\u7ea7\u5ba4\u5185\u6548\u679c\u3002",
-    negativeZh:
-      "\u6539\u53d8\u539f\u59cb\u7a7a\u95f4\u7ed3\u6784\uff0c\u5899\u4f53\u79fb\u4f4d\uff0c\u9876\u9762\u6881\u4f53\u4e22\u5931\uff0c\u7a7a\u95f4\u6bd4\u4f8b\u9519\u4e71\uff0c\u4eba\u7269\uff0c\u8fc7\u5ea6\u88c5\u9970\uff0c\u5ec9\u4ef7\u6750\u8d28\uff0c\u5851\u6599\u611f\uff0c\u4f4e\u5206\u8fa8\u7387\uff0c\u6c34\u5370\u3002",
-    negativeEn:
-      "changed original structure, moved walls, missing ceiling beams, incorrect spatial proportions, people, overdecorated styling, cheap materials, plastic texture, low resolution, watermark",
-  },
-  {
     id: "su-line",
     name: "SU\u7ebf\u7a3f\u6e32\u67d3",
     note: "\u8f6f\u88c5\u6307\u5357\u677f\u548c\u4ea7\u54c1\u76ee\u5f55\u6392\u7248",
@@ -95,6 +82,19 @@ const promptSchemes = [
       "\u5927\u7406\u77f3\u6ee5\u7528\uff0c\u5ec9\u4ef7\u6750\u8d28\uff0c\u8fc7\u5ea6\u66dd\u5149\uff0c\u6392\u7248\u6742\u4e71\uff0c\u7269\u4f53\u53d8\u5f62\uff0c\u4f4e\u5206\u8fa8\u7387\uff0c\u5361\u901a\u611f\uff0c\u63d2\u753b\u611f\uff0c\u989c\u8272\u8fc7\u9971\u548c\uff0c\u6587\u5b57\u4e71\u7801\u3002",
     negativeEn:
       "overused marble, cheap materials, overexposure, chaotic catalog layout, object deformation, low resolution, cartoon style, illustration style, oversaturated colors, garbled text",
+  },
+  {
+    id: "raw-shell",
+    name: "\u6bdb\u576f\u751f\u56fe",
+    note: "\u4fdd\u7559\u7a7a\u95f4\u7ed3\u6784\u5e76\u751f\u6210\u5b9e\u666f\u6548\u679c",
+    enGuide:
+      "Preserve the reference space structure and camera angle, keep original wall positions, ceiling beams, spatial perspective, floor level changes, side platforms, seating zones, and overall composition unchanged. Transform the rough space into a refined interior scene with coherent spatial hierarchy and realistic construction logic.",
+    zhGuide:
+      "\u53c2\u8003\u56fe\u7684\u7a7a\u95f4\u7ed3\u6784\u548c\u62cd\u6444\u89d2\u5ea6\uff0c\u4fdd\u6301\u539f\u59cb\u5899\u4f53\u4f4d\u7f6e\u3001\u9876\u9762\u6881\u4f53\u3001\u7a7a\u95f4\u900f\u89c6\u3001\u5730\u9762\u9ad8\u4f4e\u5dee\u3001\u5e73\u53f0\u3001\u5361\u5ea7\u533a\u57df\u548c\u6574\u4f53\u6784\u56fe\u4e0d\u53d8\uff0c\u5c06\u6bdb\u576f\u7a7a\u95f4\u6539\u9020\u6210\u9ad8\u7ea7\u5ba4\u5185\u6548\u679c\u3002",
+    negativeZh:
+      "\u6539\u53d8\u539f\u59cb\u7a7a\u95f4\u7ed3\u6784\uff0c\u5899\u4f53\u79fb\u4f4d\uff0c\u9876\u9762\u6881\u4f53\u4e22\u5931\uff0c\u7a7a\u95f4\u6bd4\u4f8b\u9519\u4e71\uff0c\u4eba\u7269\uff0c\u8fc7\u5ea6\u88c5\u9970\uff0c\u5ec9\u4ef7\u6750\u8d28\uff0c\u5851\u6599\u611f\uff0c\u4f4e\u5206\u8fa8\u7387\uff0c\u6c34\u5370\u3002",
+    negativeEn:
+      "changed original structure, moved walls, missing ceiling beams, incorrect spatial proportions, people, overdecorated styling, cheap materials, plastic texture, low resolution, watermark",
   },
   {
     id: "axonometric",
@@ -217,7 +217,7 @@ type LocalTranslationState = {
 };
 
 const initialState: PromptState = {
-  scheme: "raw-shell",
+  scheme: "su-line",
   space: "\u5ba2\u5385",
   style: "\u73b0\u4ee3\u6781\u7b80",
   mood: "\u6e29\u6696\u677e\u5f1b",
