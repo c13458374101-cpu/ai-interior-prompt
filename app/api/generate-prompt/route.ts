@@ -40,6 +40,10 @@ function languageLabel(language: PromptLanguage | undefined) {
   return language === "chinese" ? "Chinese" : "English";
 }
 
+function usesExtendedInputs(scheme: string | undefined) {
+  return scheme !== "su-line";
+}
+
 async function createResponse(client: OpenAI, model: string, system: string, user: string) {
   const response = await client.responses.create({
     model,
@@ -124,6 +128,28 @@ export async function POST(request: Request) {
 
     const target = body.targetLanguage;
     const paired = target === "english" ? "Chinese" : "English";
+    const includeExtendedInputs = usesExtendedInputs(body.scheme);
+    const optimizationContext = [
+      `Selected scheme: ${body.scheme || "not specified"}`,
+      `Space: ${body.space}`,
+      `Style: ${body.style}`,
+      `Mood: ${body.mood}`,
+      `Lighting level: ${typeof body.lighting === "number" ? body.lighting : "balanced"}`,
+      ...(includeExtendedInputs
+        ? [
+            `Palette: ${body.palette}`,
+            `Budget: ${body.budget}`,
+            `Materials: ${selectedMaterials}`,
+            `Key details: ${body.detail || "not specified"}`,
+            `User keywords: ${body.keywords || "not specified"}`,
+          ]
+        : []),
+      `Render engine: ${body.engine || "not specified"}`,
+      `Camera: ${body.camera}`,
+      "Current prompt:",
+      body.sourceText,
+    ].join("\n");
+
     const optimized = await createResponse(
       client,
       config.model,
@@ -135,20 +161,7 @@ export async function POST(request: Request) {
           : "Return only one polished Chinese prompt, written for professional interior design image generation.",
         "Keep practical spatial constraints, composition, materials, lighting, camera, realism notes, and image-model friendly wording.",
       ].join(" "),
-      `Selected scheme: ${body.scheme || "not specified"}
-Space: ${body.space}
-Style: ${body.style}
-Mood: ${body.mood}
-Lighting level: ${typeof body.lighting === "number" ? body.lighting : "balanced"}
-Palette: ${body.palette}
-Budget: ${body.budget}
-Materials: ${selectedMaterials}
-Render engine: ${body.engine || "not specified"}
-Camera: ${body.camera}
-Key details: ${body.detail || "not specified"}
-User keywords: ${body.keywords || "not specified"}
-Current prompt:
-${body.sourceText}`
+      optimizationContext
     );
 
     const pairedPrompt = await createResponse(

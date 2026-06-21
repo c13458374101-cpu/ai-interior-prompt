@@ -253,6 +253,10 @@ function getScheme(scheme: string | undefined) {
   return promptSchemes.find((item) => item.id === scheme) ?? promptSchemes[0];
 }
 
+function usesExtendedInputs(scheme: string | undefined) {
+  return scheme !== "su-line";
+}
+
 function translate(value: string) {
   if (translations[value]) return translations[value];
 
@@ -340,6 +344,7 @@ function decodeShareState(value: string): PromptState | null {
 
 function buildEnglishPrompt(state: PromptState, localTranslation: LocalTranslationState = emptyLocalTranslation) {
   const scheme = getScheme(state.scheme);
+  const includeExtendedInputs = usesExtendedInputs(state.scheme);
   const selectedMaterials = state.materials.length > 0 ? state.materials : initialState.materials;
   const translatedDetail = localTranslation.detailSource === state.detail ? localTranslation.detailEnglish.trim() : "";
   const translatedKeywords = localTranslation.keywordsSource === state.keywords ? localTranslation.keywordsEnglish.trim() : "";
@@ -351,17 +356,24 @@ function buildEnglishPrompt(state: PromptState, localTranslation: LocalTranslati
   return [
     `${scheme.enGuide}`,
     `Design direction: ${translate(state.style)} ${translate(state.space)}, ${translate(state.mood)} atmosphere.`,
-    `Palette and materials: ${translate(state.palette)} color palette, ${translateList(selectedMaterials.join(", "))}, realistic tactile surfaces, coherent furniture proportions.`,
-    userDetail,
-    userKeywords,
+    ...(includeExtendedInputs
+      ? [
+          `Palette and materials: ${translate(state.palette)} color palette, ${translateList(selectedMaterials.join(", "))}, realistic tactile surfaces, coherent furniture proportions.`,
+          userDetail,
+          userKeywords,
+        ]
+      : []),
     `Lighting: ${lightingDescription(state.lighting)}, premium residential atmosphere.`,
     `Rendering: ${state.engine}, ${state.camera}, eye-level or diagram-appropriate perspective, professionally composed, 8K detail, photorealistic where applicable.`,
-    `Constraints: ${translate(state.budget)}, practical circulation, no clutter, cohesive material logic, no visible brand logos.`,
+    includeExtendedInputs
+      ? `Constraints: ${translate(state.budget)}, practical circulation, no clutter, cohesive material logic, no visible brand logos.`
+      : "Constraints: strictly preserve the original line drawing layout, no clutter, no visible brand logos.",
   ].join("\n");
 }
 
 function buildChinesePrompt(state: PromptState) {
   const scheme = getScheme(state.scheme);
+  const includeExtendedInputs = usesExtendedInputs(state.scheme);
   const selectedMaterials = state.materials.length > 0 ? state.materials : initialState.materials;
   const userDetail = state.detail.trim() ? `\u5173\u952e\u7ec6\u8282\uff1a${state.detail.trim()}\u3002` : "\u5173\u952e\u7ec6\u8282\uff1a\u672a\u586b\u5199\uff0c\u4ec5\u6839\u636e\u5df2\u9009\u53c2\u6570\u751f\u6210\u3002";
   const userKeywords = state.keywords.trim() ? `\u5173\u952e\u8bcd\uff1a${zhList(state.keywords)}\u3002` : "\u5173\u952e\u8bcd\uff1a\u672a\u586b\u5199\u3002";
@@ -369,12 +381,18 @@ function buildChinesePrompt(state: PromptState) {
   return [
     scheme.zhGuide,
     `\u8bbe\u8ba1\u65b9\u5411\uff1a${state.style}${state.space}\uff0c${state.mood}\u7684\u7a7a\u95f4\u6c1b\u56f4\u3002`,
-    `\u914d\u8272\u4e0e\u6750\u8d28\uff1a${state.palette}\uff0c${selectedMaterials.join("\u3001")}\uff0c\u6750\u8d28\u771f\u5b9e\uff0c\u5bb6\u5177\u6bd4\u4f8b\u514b\u5236\u4e14\u7edf\u4e00\u3002`,
-    userDetail,
-    userKeywords,
+    ...(includeExtendedInputs
+      ? [
+          `\u914d\u8272\u4e0e\u6750\u8d28\uff1a${state.palette}\uff0c${selectedMaterials.join("\u3001")}\uff0c\u6750\u8d28\u771f\u5b9e\uff0c\u5bb6\u5177\u6bd4\u4f8b\u514b\u5236\u4e14\u7edf\u4e00\u3002`,
+          userDetail,
+          userKeywords,
+        ]
+      : []),
     `\u5149\u5f71\uff1a${lightingDescriptionZh(state.lighting)}\uff0c\u9ad8\u7ea7\u5ba4\u5185\u6444\u5f71\u6c1b\u56f4\u3002`,
     `\u6e32\u67d3\uff1a${state.engine}\uff0c${state.camera}\uff0c\u6784\u56fe\u4e13\u4e1a\uff0c8K \u7ec6\u8282\uff0c\u9002\u7528\u573a\u666f\u4fdd\u6301\u7167\u7247\u7ea7\u771f\u5b9e\u611f\u3002`,
-    `\u9650\u5236\uff1a${state.budget}\uff0c\u52a8\u7ebf\u5408\u7406\uff0c\u4e0d\u6742\u4e71\uff0c\u6750\u8d28\u903b\u8f91\u7edf\u4e00\uff0c\u65e0\u54c1\u724c logo\u3002`,
+    includeExtendedInputs
+      ? `\u9650\u5236\uff1a${state.budget}\uff0c\u52a8\u7ebf\u5408\u7406\uff0c\u4e0d\u6742\u4e71\uff0c\u6750\u8d28\u903b\u8f91\u7edf\u4e00\uff0c\u65e0\u54c1\u724c logo\u3002`
+      : "\u9650\u5236\uff1a\u4e25\u683c\u4fdd\u7559\u539f\u59cb\u7ebf\u7a3f\u7a7a\u95f4\u5e03\u5c40\uff0c\u4e0d\u6742\u4e71\uff0c\u65e0\u54c1\u724c logo\u3002",
   ].join("\n");
 }
 
@@ -433,6 +451,11 @@ export default function Home() {
   const effectiveNegativePrompt = state.negativePromptOverride || generatedNegativePrompt;
 
   useEffect(() => {
+    if (!usesExtendedInputs(state.scheme)) {
+      setLocalTranslation(emptyLocalTranslation);
+      return;
+    }
+
     const detail = state.detail.trim();
     const keywords = state.keywords.trim();
     const shouldTranslateDetail = Boolean(detail && containsChinese(detail));
@@ -470,7 +493,7 @@ export default function Home() {
     }, 800);
 
     return () => window.clearTimeout(timeout);
-  }, [state.detail, state.keywords]);
+  }, [state.detail, state.keywords, state.scheme]);
 
   useEffect(() => {
     if (!lastEdited) return;
@@ -683,6 +706,7 @@ export default function Home() {
   };
 
   const showKeyBox = error.includes("OPENAI_API_KEY") || keySaved;
+  const showExtendedControls = usesExtendedInputs(state.scheme);
 
   return (
     <main className="shell">
@@ -776,17 +800,19 @@ export default function Home() {
               />
             </div>
 
-            <div className="group" role="group" aria-label={labels.materials}>
-              <div className="groupLabel">{labels.materials}</div>
-              <div className="checkGrid">
-                {materials.map((material) => (
-                  <label className={state.materials.includes(material) ? "checkCard checkCardActive" : "checkCard"} key={material}>
-                    <input checked={state.materials.includes(material)} onChange={() => toggleMaterial(material)} type="checkbox" />
-                    <span>{material}</span>
-                  </label>
-                ))}
+            {showExtendedControls ? (
+              <div className="group" role="group" aria-label={labels.materials}>
+                <div className="groupLabel">{labels.materials}</div>
+                <div className="checkGrid">
+                  {materials.map((material) => (
+                    <label className={state.materials.includes(material) ? "checkCard checkCardActive" : "checkCard"} key={material}>
+                      <input checked={state.materials.includes(material)} onChange={() => toggleMaterial(material)} type="checkbox" />
+                      <span>{material}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : null}
 
             <div className="group" role="group" aria-label={labels.engine}>
               <div className="groupLabel">{labels.engine}</div>
@@ -806,23 +832,27 @@ export default function Home() {
               </div>
             </div>
 
-            <label className="field controlCard">
-              <span>{labels.palette}</span>
-              <select value={state.palette} onChange={(event) => updateState({ palette: event.target.value })}>
-                {palettes.map((palette) => (
-                  <option key={palette}>{palette}</option>
-                ))}
-              </select>
-            </label>
+            {showExtendedControls ? (
+              <>
+                <label className="field controlCard">
+                  <span>{labels.palette}</span>
+                  <select value={state.palette} onChange={(event) => updateState({ palette: event.target.value })}>
+                    {palettes.map((palette) => (
+                      <option key={palette}>{palette}</option>
+                    ))}
+                  </select>
+                </label>
 
-            <label className="field controlCard">
-              <span>{labels.budget}</span>
-              <select value={state.budget} onChange={(event) => updateState({ budget: event.target.value })}>
-                {budgets.map((budget) => (
-                  <option key={budget}>{budget}</option>
-                ))}
-              </select>
-            </label>
+                <label className="field controlCard">
+                  <span>{labels.budget}</span>
+                  <select value={state.budget} onChange={(event) => updateState({ budget: event.target.value })}>
+                    {budgets.map((budget) => (
+                      <option key={budget}>{budget}</option>
+                    ))}
+                  </select>
+                </label>
+              </>
+            ) : null}
 
             <ControlGroup label={labels.mood}>
               {moods.map((mood) => (
@@ -839,24 +869,28 @@ export default function Home() {
               ))}
             </ControlGroup>
 
-            <label className="field controlCard wide">
-              <span>{labels.detail}</span>
-              <textarea
-                value={state.detail}
-                onChange={(event) => updateState({ detail: event.target.value })}
-                placeholder={labels.detailPlaceholder}
-              />
-            </label>
+            {showExtendedControls ? (
+              <>
+                <label className="field controlCard wide">
+                  <span>{labels.detail}</span>
+                  <textarea
+                    value={state.detail}
+                    onChange={(event) => updateState({ detail: event.target.value })}
+                    placeholder={labels.detailPlaceholder}
+                  />
+                </label>
 
-            <label className="field controlCard wide">
-              <span>{labels.keywords}</span>
-              <textarea
-                className="keywordsInput"
-                value={state.keywords}
-                onChange={(event) => updateState({ keywords: event.target.value })}
-                placeholder={labels.keywordPlaceholder}
-              />
-            </label>
+                <label className="field controlCard wide">
+                  <span>{labels.keywords}</span>
+                  <textarea
+                    className="keywordsInput"
+                    value={state.keywords}
+                    onChange={(event) => updateState({ keywords: event.target.value })}
+                    placeholder={labels.keywordPlaceholder}
+                  />
+                </label>
+              </>
+            ) : null}
           </form>
 
           <aside className="output">
